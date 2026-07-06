@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f172a">
+<link rel="apple-touch-icon" href="icone-192.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emissão Oficial - Documento do Estudante</title>
+    
+    <!-- Fonte Moderna do Google -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Biblioteca para o Código de Barras -->
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
+    
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #e2e8f0;
+            color: #1e293b;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* --- ZONA DO FORMULÁRIO --- */
+        .container {
+            width: 100%;
+            max-width: 850px;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            padding: 35px;
+            margin-bottom: 30px;
+        }
+
+        h2.section-title {
+            font-size: 24px;
+            color: #0f172a;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 15px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .notice-warning {
+            background-color: #f0fdf4;
+            color: #166534;
+            padding: 16px;
+            border-radius: 8px;
+            border-left: 4px solid #22c55e;
+            margin-bottom: 25px;
+            font-size: 14px;
+            line-height: 1.6;
+            font-weight: 500;
+        }
+
+        .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+        @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
+        .form-group { display: flex; flex-direction: column; gap: 8px; }
+        .form-group.full-width { grid-column: span 2; }
+        @media (max-width: 600px) { .form-group.full-width { grid-column: span 1; } }
+
+        label { font-size: 13px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; }
+        input, select {
+            padding: 14px; border: 1px solid #cbd5e1; border-radius: 8px;
+            font-size: 15px; background-color: #f8fafc; font-family: 'Inter', sans-serif;
+            transition: all 0.2s;
+        }
+        input:focus, select:focus { outline: none; border-color: #2563eb; background-color: #fff; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+        
+        .error-msg { color: #ef4444; font-size: 12px; display: none; font-weight: 600; margin-top: -4px;}
+
+        .file-input-wrapper {
+            position: relative; border: 2px dashed #94a3b8; padding: 25px;
+            border-radius: 8px; text-align: center; background: #f8fafc; cursor: pointer;
+            transition: all 0.2s;
+        }
+        .file-input-wrapper:hover { border-color: #2563eb; background: #eff6ff; }
+        .file-input-wrapper input[type="file"] { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+
+        .checkbox-group {
+            display: flex; gap: 12px; align-items: flex-start; margin-top: 25px;
+            background: #f8fafc; padding: 18px; border-radius: 8px; border: 1px solid #e2e8f0;
+        }
+        .checkbox-group input { margin-top: 4px; transform: scale(1.2); }
+        .checkbox-group label { font-size: 13px; font-weight: 500; color: #475569; line-height: 1.5; cursor: pointer; }
+
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            padding: 16px 28px; font-size: 16px; font-weight: 700; border-radius: 8px;
+            border: none; cursor: pointer; width: 100%; margin-top: 25px; color: white;
+            transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .btn-primary { background-color: #0f172a; }
+        .btn-primary:hover { background-color: #1e293b; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .btn-primary:disabled { background-color: #94a3b8; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        /* --- ZONA DO CARTÃO DE ESTUDANTE GERADO --- */
+        #preview-section { display: none; flex-direction: column; align-items: center; width: 100%; }
+        
+        .cie-card {
+            width: 800px; height: 480px; 
+            background: #ffffff;
+            border-radius: 20px; 
+            display: flex; position: relative;
+            overflow: hidden; 
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            /* Textura de Segurança (Guilloche) */
+            background-image: 
+                radial-gradient(circle at 100% 150%, #f1f5f9 24%, white 24%, white 28%, #f1f5f9 28%, #f1f5f9 36%, white 36%, white 40%, transparent 40%, transparent),
+                radial-gradient(circle at 0 150%, #f1f5f9 24%, white 24%, white 28%, #f1f5f9 28%, #f1f5f9 36%, white 36%, white 40%, transparent 40%, transparent);
+            background-size: 60px 60px;
+        }
+
+        /* 1. Marca de Água (Watermark) */
+        .watermark-overlay {
+            position: absolute;
+            top: 50%; left: 40%;
+            transform: translate(-50%, -50%) rotate(-30deg);
+            font-size: 70px;
+            font-weight: 900;
+            color: rgba(15, 23, 42, 0.04);
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        /* Fita Holográfica na Borda */
+        .hologram-strip {
+            position: absolute; left: 15px; top: 0; bottom: 0; width: 12px;
+            background: linear-gradient(180deg, rgba(255,215,0,0.4) 0%, rgba(0,255,128,0.3) 25%, rgba(0,191,255,0.3) 50%, rgba(255,20,147,0.3) 75%, rgba(255,215,0,0.4) 100%);
+            z-index: 10; opacity: 0.6; mix-blend-mode: multiply; border-radius: 10px;
+        }
+
+        /* Painel Esquerdo (Dados e Foto) */
+        .cie-card-left { 
+            flex: 2.8; padding: 35px 35px 35px 45px; 
+            display: flex; flex-direction: column; gap: 20px; z-index: 6; 
+        }
+
+        .cie-card-header { 
+            display: flex; justify-content: space-between; align-items: center; 
+            border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; 
+        }
+        
+        .logo-cie-container { display: flex; align-items: center; gap: 15px;}
+        .logo-cie-container h1 { margin: 0; font-size: 46px; color: #0f172a; font-weight: 900; letter-spacing: -2px; }
+        .cie-title-text { border-left: 2px solid #0f172a; padding-left: 15px; }
+        .cie-title-text p { font-size: 13px; color: #334155; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; line-height: 1.3;}
+        
+        .gov-badge { 
+            font-size: 9px; color: #ffffff; font-weight: 800; text-align: center; 
+            background: #16a34a; padding: 6px 10px; border-radius: 4px; letter-spacing: 0.5px;
+        }
+
+        .cie-card-nome { 
+            font-size: 28px; font-weight: 900; color: #0f172a; text-transform: uppercase; 
+            letter-spacing: -0.5px; margin-top: 5px;
+        }
+
+        .cie-card-details { display: flex; gap: 30px; align-items: flex-start; margin-top: 5px;}
+        
+        /* 2. Foto Totalmente Colorida */
+        .photo-container {
+            width: 140px; height: 180px; background-color: #f1f5f9; 
+            border-radius: 8px; overflow: hidden; 
+            border: 2px solid #cbd5e1; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        .photo-container img { 
+            width: 100%; height: 100%; object-fit: cover;
+        }
+        
+        .student-info-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%;
+        }
+        .data-block { display: flex; flex-direction: column; gap: 2px; }
+        .data-block.full { grid-column: span 2; }
+        
+        .label-muted { color: #64748b; font-weight: 700; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .data-value { font-size: 15px; color: #0f172a; font-weight: 700; text-transform: uppercase; }
+
+        /* 3. Código de Barras Inferior (Code 128) */
+        .barcode-container {
+            margin-top: 10px;
+            text-align: left;
+        }
+        .barcode-container svg { height: 45px; width: 250px; }
+
+        /* Painel Direito (Segurança e QR Code) - Azul Escuro */
+        .cie-card-right {
+            flex: 1.2; background: linear-gradient(145deg, #0f172a 0%, #1e293b 100%); 
+            padding: 35px 25px; display: flex; flex-direction: column; 
+            align-items: center; justify-content: space-between;
+            color: white; position: relative; z-index: 6;
+            border-left: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .icp-brasil { 
+            font-size: 10px; font-weight: 800; color: #94a3b8; text-align: center; 
+            border: 1px solid rgba(148, 163, 184, 0.4); padding: 8px 12px; border-radius: 6px; 
+            text-transform: uppercase; letter-spacing: 0.5px; width: 100%;
+        }
+        .icp-brasil span { color: #fff; }
+
+        .qr-code-container { 
+            width: 160px; height: 160px; background: white; padding: 10px; 
+            border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); 
+        }
+        .qr-code-container img { width: 100%; height: 100%; }
+        
+        .usage-code-text { font-size: 10px; text-align: center; color: #94a3b8; font-weight: 600; text-transform: uppercase;}
+        .usage-code-text .code { 
+            font-size: 18px; font-weight: 900; color: #ffffff; margin-top: 6px; 
+            font-family: monospace; letter-spacing: 1px; background: rgba(255,255,255,0.1);
+            padding: 6px 12px; border-radius: 6px;
+        }
+        
+        .validity-box { background: #dc2626; padding: 8px 15px; border-radius: 6px; text-align: center; width: 100%; font-weight: 800; font-size: 13px;}
+        
+        .ano-vigente { 
+            position: absolute; bottom: -20px; right: 10px;
+            font-size: 120px; font-weight: 900; color: rgba(255,255,255,0.05); 
+            line-height: 1; z-index: -1;
+        }
+
+        /* --- BARRA DE STATUS E BOTÕES --- */
+        .status-bar {
+            width: 800px; padding: 18px; border-radius: 12px; font-size: 16px;
+            font-weight: 800; text-align: center; margin-top: 25px;
+            background-color: #f0fdf4; color: #166534; border: 2px solid #22c55e;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
+        }
+
+        .actions-wrapper { display: flex; gap: 15px; justify-content: center; margin-top: 25px; width: 800px; }
+        .btn-secondary { background-color: #64748b; width: auto; margin-top: 0; }
+        .btn-download { background-color: #2563eb; width: auto; margin-top: 0; }
+
+        /* OTIMIZAÇÃO DE IMPRESSÃO (PDF) */
+        @media print {
+            body { background: none; padding: 0; margin: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .container, .actions-wrapper, .status-bar { display: none !important; }
+            #preview-section { display: flex !important; margin: 0; padding: 0; align-items: flex-start;}
+            .cie-card { 
+                box-shadow: none !important; position: absolute; top: 0; left: 0; 
+                transform: scale(0.95); transform-origin: top left;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="form-container">
+        <h2 class="section-title">Sistema Central - Emissão de Documento Estudantil</h2>
+        
+        <div class="notice-warning">
+            <strong>Validação Necessária</strong><br>
+            O documento gerado possuirá código de barras, marca de água anti-cópia e assinatura digital com QR Code.
+        </div>
+
+        <form id="cie-form" onsubmit="gerarCarteirinha(event)">
+            <div class="form-grid">
+                <div class="form-group full-width">
+                    <label for="input-nome">Nome Completo</label>
+                    <input type="text" id="input-nome" placeholder="Conforme documento de identidade" required minlength="5">
+                </div>
+
+                <div class="form-group">
+                    <label for="input-cpf">CPF</label>
+                    <input type="text" id="input-cpf" placeholder="000.000.000-00" maxlength="14" required oninput="mascaraCPF(this)">
+                    <span id="cpf-error" class="error-msg">CPF Inválido</span>
+                </div>
+                
+                <div class="form-group">
+                    <label for="input-nasc">Data de Nascimento</label>
+                    <input type="date" id="input-nasc" required max="2015-12-31">
+                </div>
+
+                <div class="form-group">
+                    <label for="input-inst">Instituição de Ensino</label>
+                    <input type="text" id="input-inst" placeholder="Ex: USP, IESB, Estácio" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="input-matricula">Nº de Matrícula (RA)</label>
+                    <input type="text" id="input-matricula" placeholder="Número de registo" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="input-curso">Curso / Formação</label>
+                    <input type="text" id="input-curso" placeholder="Ex: Direito, Administração" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="input-nivel">Escolaridade</label>
+                    <select id="input-nivel" required>
+                        <option value="EDUCAÇÃO BÁSICA">Educação Básica (Médio)</option>
+                        <option value="TÉCNICO">Ensino Técnico</option>
+                        <option value="GRADUAÇÃO" selected>Graduação (Superior)</option>
+                        <option value="PÓS-GRADUAÇÃO">Pós-Graduação</option>
+                    </select>
+                </div>
+
+                <div class="form-group full-width">
+                    <label>Foto Oficial 3x4</label>
+                    <div class="file-input-wrapper">
+                        <span id="file-label">📸 Clique para Selecionar a Foto</span>
+                        <input type="file" id="input-foto" accept="image/jpeg, image/png" required onchange="previewImage(event)">
+                    </div>
+                </div>
+            </div>
+
+            <div class="checkbox-group">
+                <input type="checkbox" id="termos" required onchange="validarFormulario()">
+                <label for="termos">Declaro, sob as penas da lei, que as informações prestadas são verdadeiras e que possuo vínculo ativo com a instituição de ensino informada. Autorizo a assinatura digital deste documento.</label>
+            </div>
+            
+            <button type="submit" class="btn btn-primary" id="btn-submit" disabled>Validar e Emitir Cartão Autêntico</button>
+        </form>
+    </div>
+
+    <!-- PREVIEW DO CARTÃO GERADO -->
+    <div id="preview-section">
+        <div class="cie-card">
+            <div class="hologram-strip"></div>
+            
+            <!-- MARCA DE ÁGUA DINÂMICA -->
+            <div class="watermark-overlay" id="watermark-nome">NOME DO ALUNO</div>
+            
+            <!-- Esquerda: Dados -->
+            <div class="cie-card-left">
+                <div class="cie-card-header">
+                    <div class="logo-cie-container">
+                        <h1>DNE</h1>
+                        <div class="cie-title-text">
+                            <p>Documento Nacional<br>do Estudante</p>
+                        </div>
+                    </div>
+                    <div class="gov-badge">VÁLIDO EM TODO O BRASIL</div>
+                </div>
+
+                <div class="cie-card-nome" id="card-nome">NOME DO ALUNO</div>
+
+                <div class="cie-card-details">
+                    <div class="photo-container">
+                        <img id="card-img" src="" alt="Foto do Aluno">
+                    </div>
+                    
+                    <div>
+                        <div class="student-info-grid">
+                            <div class="data-block">
+                                <span class="label-muted">CPF</span>
+                                <span class="data-value" id="card-cpf"></span>
+                            </div>
+                            <div class="data-block">
+                                <span class="label-muted">Nascimento</span>
+                                <span class="data-value" id="card-nasc"></span>
+                            </div>
+                            <div class="data-block full">
+                                <span class="label-muted">Instituição de Ensino</span>
+                                <span class="data-value" id="card-inst"></span>
+                            </div>
+                            <div class="data-block">
+                                <span class="label-muted">Matrícula</span>
+                                <span class="data-value" id="card-matricula"></span>
+                            </div>
+                            <div class="data-block">
+                                <span class="label-muted">Nível</span>
+                                <span class="data-value" id="card-nivel"></span>
+                            </div>
+                            <div class="data-block full">
+                                <span class="label-muted">Curso</span>
+                                <span class="data-value" id="card-curso"></span>
+                            </div>
+                        </div>
+
+                        <!-- CÓDIGO DE BARRAS -->
+                        <div class="barcode-container">
+                            <svg id="barcode-svg"></svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Direita: Segurança e QR Code -->
+            <div class="cie-card-right">
+                <div class="icp-brasil">
+                    Padrão de Segurança<br><span>Assinatura Digital</span>
+                </div>
+                
+                <div class="qr-code-container">
+                    <img id="card-qrcode" src="" alt="QR Code Assinado">
+                </div>
+                
+                <div class="usage-code-text">
+                    <p>Certificado de Validação</p>
+                    <p class="code" id="card-codigo">GERANDO...</p>
+                </div>
+                
+                <div class="validity-box">
+                    VÁLIDO ATÉ 31/03/2027
+                </div>
+                
+                <div class="ano-vigente">2026</div>
+            </div>
+        </div>
+
+        <div class="status-bar">
+            ✅ Documento Gerado. Autenticidade garantida por Assinatura Digital e Código Linear.
+        </div>
+
+        <div class="actions-wrapper">
+            <button class="btn btn-secondary" onclick="window.location.reload()">Emitir Novo Documento</button>
+            <button class="btn btn-download" onclick="window.print()">Salvar em PDF</button>
+        </div>
+    </div>
+
+    <script>
+        let fotoDataUrl = "";
+
+        function mascaraCPF(input) {
+            let v = input.value.replace(/\D/g, "");
+            v = v.replace(/(\d{3})(\d)/, "$1.$2");
+            v = v.replace(/(\d{3})(\d)/, "$1.$2");
+            v = v.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+            input.value = v;
+            validarFormulario();
+        }
+
+        function testaCPF(strCPF) {
+            strCPF = strCPF.replace(/[^\d]+/g,'');
+            if (strCPF.length !== 11 || /^(\d)\1+$/.test(strCPF)) return false;
+            let soma = 0, resto;
+            for (let i = 1; i <= 9; i++) soma = soma + parseInt(strCPF.substring(i-1, i)) * (11 - i);
+            resto = (soma * 10) % 11;
+            if ((resto === 10) || (resto === 11)) resto = 0;
+            if (resto !== parseInt(strCPF.substring(9, 10))) return false;
+            soma = 0;
+            for (let i = 1; i <= 10; i++) soma = soma + parseInt(strCPF.substring(i-1, i)) * (12 - i);
+            resto = (soma * 10) % 11;
+            if ((resto === 10) || (resto === 11)) resto = 0;
+            return resto === parseInt(strCPF.substring(10, 11));
+        }
+
+        function validarFormulario() {
+            const cpf = document.getElementById('input-cpf').value;
+            const termos = document.getElementById('termos').checked;
+            const btn = document.getElementById('btn-submit');
+            const erroCpf = document.getElementById('cpf-error');
+
+            const cpfValido = cpf.length === 14 && testaCPF(cpf);
+            
+            if (cpf.length === 14 && !cpfValido) {
+                erroCpf.style.display = 'block';
+            } else {
+                erroCpf.style.display = 'none';
+            }
+
+            btn.disabled = !(cpfValido && termos);
+        }
+
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    fotoDataUrl = e.target.result;
+                    document.getElementById('file-label').innerText = `✅ Foto Anexada: ${file.name}`;
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function gerarHashCriptografico(cpf, matricula) {
+            const raw = `${cpf}-${matricula}-${Date.now()}`;
+            return btoa(raw).substring(0, 12).toUpperCase().replace(/(.{4})/g, '$1-').slice(0, -1);
+        }
+
+        function gerarCarteirinha(event) {
+            event.preventDefault();
+
+            const nome = document.getElementById('input-nome').value;
+            const cpf = document.getElementById('input-cpf').value;
+            const nascimento = document.getElementById('input-nasc').value;
+            const inst = document.getElementById('input-inst').value;
+            const matricula = document.getElementById('input-matricula').value;
+            const curso = document.getElementById('input-curso').value;
+            const nivel = document.getElementById('input-nivel').value;
+
+            const dataObj = new Date(nascimento);
+            const dataFormatada = dataObj.toLocaleDateString('pt-BR', {timeZone: 'UTC'});
+            const codigoCertificado = gerarHashCriptografico(cpf, matricula);
+
+            // Preencher os dados de texto
+            document.getElementById('card-nome').innerText = nome;
+            document.getElementById('watermark-nome').innerText = nome.toUpperCase();
+            document.getElementById('card-cpf').innerText = cpf;
+            document.getElementById('card-nasc').innerText = dataFormatada;
+            document.getElementById('card-inst').innerText = inst.toUpperCase();
+            document.getElementById('card-matricula').innerText = matricula;
+            document.getElementById('card-curso').innerText = curso.toUpperCase();
+            document.getElementById('card-nivel').innerText = nivel.toUpperCase();
+            document.getElementById('card-codigo').innerText = codigoCertificado;
+
+            if(fotoDataUrl) document.getElementById('card-img').src = fotoDataUrl;
+
+            // Geração do QR Code Dinâmico
+            const dadosAssinados = `https://validador.gov.br/check?token=${codigoCertificado}`;
+            document.getElementById('card-qrcode').src = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(dadosAssinados)}&bgcolor=ffffff&color=0f172a`;
+
+            // Geração do Código de Barras Linear (Code 128)
+            const cpfNumeros = cpf.replace(/\D/g, '');
+            JsBarcode("#barcode-svg", cpfNumeros, {
+                format: "CODE128",
+                lineColor: "#0f172a",
+                width: 2,
+                height: 35,
+                displayValue: false,
+                background: "transparent"
+            });
+
+            // Troca de ecrã (mostra o cartão finalizado)
+            document.getElementById('form-container').style.display = 'none';
+            document.getElementById('preview-section').style.display = 'flex';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then(registration => {
+          console.log('ServiceWorker registado com sucesso:', registration.scope);
+        })
+        .catch(err => {
+          console.log('O registo do ServiceWorker falhou:', err);
+        });
+    });
+  }
+</script>
+</html>
