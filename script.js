@@ -137,7 +137,6 @@ async function iniciarPagamentoPix(event) {
             document.getElementById('pix-copia-cola').value = data.qr_code;
             if(statusText) statusText.innerText = "🤖 Pix gerado com sucesso! Simulando aprovação...";
 
-            // Simula aprovação imediata ou aguarda verificação
             setTimeout(() => {
                 document.getElementById('pix-modal').style.display = 'none';
                 salvarCarteirinhaPagamento();
@@ -236,9 +235,10 @@ function gerarCarteirinhaFinal() {
     iniciarProtecaoAntiPrint();
 }
 
-// Redireciona para o endpoint do Google Wallet com o CPF atual apontando para o Render
+// Envia o CPF limpo para a rota do Google Wallet no Render
 function salvarGoogleWallet() {
-    const cpf = document.getElementById('card-cpf').innerText;
+    const cpfTexto = document.getElementById('card-cpf').innerText;
+    const cpf = cpfTexto.replace(/\D/g, ''); // Remove pontos e traços
     if (!cpf) {
         alert('CPF não identificado.');
         return;
@@ -246,7 +246,6 @@ function salvarGoogleWallet() {
     window.location.href = `${API_URL}/api/carteira?action=google&cpf=${cpf}`;
 }
 
-// Gera o print/imagem da carteirinha completa para download
 function baixarImagemCarteirinha() {
     const element = document.getElementById('pdf-content-area');
     html2canvas(element, { scale: 3, useCORS: true }).then(canvas => {

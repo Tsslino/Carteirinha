@@ -40,11 +40,12 @@ app.post('/api/pagamento', async (req, res) => {
     // 1. Rota de Login do Estudante
     if (action === 'login') {
         const { cpf, senha } = req.body;
+        const cpfLimpo = cpf ? cpf.replace(/\D/g, '') : '';
         try {
             const { data: estudante, error } = await supabase
                 .from('carteirinhas')
                 .select('*')
-                .eq('cpf', cpf)
+                .eq('cpf', cpfLimpo)
                 .single();
 
             if (error || !estudante || estudante.senha !== senha) {
@@ -65,6 +66,9 @@ app.post('/api/pagamento', async (req, res) => {
     if (action === 'salvar' || req.body.cpf) {
         try {
             const dados = req.body;
+            if (dados.cpf) {
+                dados.cpf = dados.cpf.replace(/\D/g, ''); // Limpa o CPF antes de guardar
+            }
             const { error } = await supabase
                 .from('carteirinhas')
                 .upsert([dados], { onConflict: 'cpf' });
@@ -98,11 +102,13 @@ app.get('/api/carteira', async (req, res) => {
         return res.status(400).json({ error: 'CPF não informado.' });
     }
 
+    const cpfLimpo = cpf.replace(/\D/g, '');
+
     try {
         const { data: estudante, error } = await supabase
             .from('carteirinhas') 
             .select('*')
-            .eq('cpf', cpf)
+            .eq('cpf', cpfLimpo)
             .single();
 
         if (error || !estudante) {
