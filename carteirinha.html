@@ -111,20 +111,10 @@
             </div>
 
             <!-- BOTÃO PRINCIPAL DE SALVAR PRINT DA CARTEIRINHA -->
-            <div class="mb-3">
-                <button onclick="salvarPrintCarteirinha()" class="w-full bg-green-600 hover:bg-green-500 text-white font-extrabold py-3 px-3 rounded-xl text-xs flex items-center justify-center gap-2 transition shadow-lg">
+            <div class="mt-2">
+                <button onclick="salvarPrintCarteirinha()" class="w-full bg-green-600 hover:bg-green-500 text-white font-extrabold py-3.5 px-3 rounded-xl text-xs flex items-center justify-center gap-2 transition shadow-lg">
                     <i class="fa-solid fa-download text-sm"></i> Salvar Imagem da Carteirinha
                 </button>
-            </div>
-
-            <!-- ADICIONAR AO GOOGLE PAY (OPCIONAL) -->
-            <div class="space-y-2 pt-2 border-t border-gray-800">
-                <p class="text-[10px] text-gray-400 font-bold text-center uppercase">Carteira Digital Nativa</p>
-                <div>
-                    <button onclick="adicionarGoogleWallet()" class="w-full bg-slate-800 hover:bg-slate-700 border border-gray-700 text-white font-semibold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 transition">
-                        <i class="fa-brands fa-google-pay text-base text-blue-400"></i> Google Pay
-                    </button>
-                </div>
             </div>
 
         </div>
@@ -274,7 +264,7 @@
             document.getElementById('modalBilheteria').classList.add('hidden');
         }
 
-        // Função para gerar o print focado e limpo apenas da carteirinha
+        // Função para gerar o print focado e limpo apenas da carteirinha e descarregar no telemóvel
         function salvarPrintCarteirinha() {
             const element = document.getElementById('areaPrintCarteirinha');
             html2canvas(element, { scale: 3, useCORS: true }).then(canvas => {
@@ -283,11 +273,6 @@
                 link.href = canvas.toDataURL('image/png');
                 link.click();
             });
-        }
-
-        function adicionarGoogleWallet() {
-            if (!cpfAtualModal) return alert('Erro ao identificar a carteirinha.');
-            window.location.href = `https://dne-backend.onrender.com/api/carteira?action=google&cpf=${cpfAtualModal}`;
         }
 
         function fazerLogout() {
