@@ -25,6 +25,13 @@ const ISSUER_ID = process.env.GOOGLE_ISSUER_ID || '338800000023214433';
 const CREDENTIALS_PATH = './google-service-account.json';
 
 // ==========================================
+// ROTA RAIZ (Evita erro 404 ao abrir a URL)
+// ==========================================
+app.get('/', (req, res) => {
+    res.send('API da Carteirinha DNE a funcionar com sucesso!');
+});
+
+// ==========================================
 // ROTAS DA API DE PAGAMENTO E AUTENTICAÇÃO
 // ==========================================
 app.post('/api/pagamento', async (req, res) => {
@@ -120,7 +127,6 @@ app.get('/api/carteira', async (req, res) => {
 // FUNÇÃO DE GERAÇÃO DO LINK DO GOOGLE WALLET
 // ==========================================
 function gerarLinkGoogleWallet(estudante) {
-    // Carrega as credenciais de forma segura (Render via env ou localmente via ficheiro)
     const credentials = process.env.GOOGLE_CREDENTIALS_JSON 
         ? JSON.parse(process.env.GOOGLE_CREDENTIALS_JSON) 
         : require(CREDENTIALS_PATH);
