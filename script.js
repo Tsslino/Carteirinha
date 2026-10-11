@@ -1,4 +1,5 @@
 let fotoDataUrl = "";
+const API_URL = 'https://dne-backend.onrender.com';
 const instList = ["USP - Universidade de São Paulo", "UFSC - Universidade Federal de Santa Catarina", "UFRJ - Univ. Federal do Rio de Janeiro", "UNICAMP", "UNESP", "PUC - Pontifícia Univ. Católica", "Estácio de Sá", "Anhanguera Educacional", "FGV - Fundação Getulio Vargas", "IFSC - Inst. Federal de Santa Catarina"];
 
 function irParaFormulario() {
@@ -112,7 +113,7 @@ function validarEtapa3() {
     document.getElementById('btn-submit').disabled = !(fotoDataUrl && termos);
 }
 
-// INTEGRAÇÃO COM O MERCADO PAGO VIA API
+// INTEGRAÇÃO COM O BACKEND VIA API
 async function iniciarPagamentoPix(event) {
     event.preventDefault();
     
@@ -121,10 +122,10 @@ async function iniciarPagamentoPix(event) {
     
     document.getElementById('pix-modal').style.display = 'flex';
     const statusText = document.getElementById('status-text-ia');
-    if(statusText) statusText.innerText = "🤖 Agente de IA gerando Pix no Mercado Pago...";
+    if(statusText) statusText.innerText = "🤖 Gerando Pix de teste...";
 
     try {
-        const response = await fetch('/api/pagamento', {
+        const response = await fetch(`${API_URL}/api/pagamento`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ tipo: 'emissao', nome: nome, cpf: cpf })
@@ -132,12 +133,16 @@ async function iniciarPagamentoPix(event) {
 
         const data = await response.json();
 
-        if (data.qr_code_base64) {
-            document.getElementById('pix-qrcode-img').src = `data:image/jpeg;base64,${data.qr_code_base64}`;
+        if (data.qr_code || data.id) {
             document.getElementById('pix-copia-cola').value = data.qr_code;
-            if(statusText) statusText.innerText = "🤖 Agente de IA aguardando o pagamento do Pix...";
+            if(statusText) statusText.innerText = "🤖 Pix gerado com sucesso! Simulando aprovação...";
 
-            verificarStatusPagamento(data.id);
+            // Simula aprovação imediata ou aguarda verificação
+            setTimeout(() => {
+                document.getElementById('pix-modal').style.display = 'none';
+                salvarCarteirinhaPagamento();
+                gerarCarteirinhaFinal();
+            }, 3000);
         } else {
             alert('Erro ao gerar o Pix. Verifique os dados.');
             document.getElementById('pix-modal').style.display = 'none';
@@ -152,7 +157,7 @@ async function iniciarPagamentoPix(event) {
 function verificarStatusPagamento(paymentId) {
     const intervalo = setInterval(async () => {
         try {
-            const res = await fetch(`/api/pagamento?action=verificar&id=${paymentId}`);
+            const res = await fetch(`${API_URL}/api/pagamento?action=verificar&id=${paymentId}`);
             const data = await res.json();
 
             if (data.status === 'approved') {
@@ -183,7 +188,7 @@ async function salvarCarteirinhaPagamento() {
     };
 
     try {
-        await fetch('/api/pagamento?action=salvar', {
+        await fetch(`${API_URL}/api/pagamento?action=salvar`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(dadosAluno)
@@ -231,14 +236,14 @@ function gerarCarteirinhaFinal() {
     iniciarProtecaoAntiPrint();
 }
 
-// Redireciona para o endpoint do Google Wallet com o CPF atual
+// Redireciona para o endpoint do Google Wallet com o CPF atual apontando para o Render
 function salvarGoogleWallet() {
     const cpf = document.getElementById('card-cpf').innerText;
     if (!cpf) {
         alert('CPF não identificado.');
         return;
     }
-    window.location.href = `/api/carteira?action=google&cpf=${cpf}`;
+    window.location.href = `${API_URL}/api/carteira?action=google&cpf=${cpf}`;
 }
 
 // Gera o print/imagem da carteirinha completa para download
