@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Documento do Estudante - Emissão Oficial com Agente de IA</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', sans-serif;
+            color: #1e293b;
+            background-color: #ffffff;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+            user-select: none;
+        }
+
+        /* HEADER */
+        header {
+            background-color: #ffffff;
+            padding: 14px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #e2e8f0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .brand-logo-official {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .logo-shield-icon {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+            border: 2px solid #eab308;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #facc15;
+            font-size: 20px;
+        }
+
+        .logo-title-bold { font-size: 20px; font-weight: 900; color: #0f172a; line-height: 1; }
+        .logo-title-bold span { color: #2563eb; }
+        .logo-subtitle-official { font-size: 9px; font-weight: 800; color: #64748b; text-transform: uppercase; margin-top: 3px; }
+
+        .header-trust-badges { display: flex; align-items: center; gap: 12px; }
+        @media (max-width: 900px) { .header-trust-badges { display: none; } }
+
+        .badge-trust-item {
+            display: flex; align-items: center; gap: 6px; font-size: 11px;
+            font-weight: 700; color: #334155; background: #f1f5f9; padding: 6px 14px; border-radius: 20px;
+        }
+
+        .badge-price-highlight {
+            background: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d;
+            font-weight: 800; font-size: 12px; padding: 6px 14px; border-radius: 20px;
+        }
+
+        .btn-cta-header {
+            background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
+            color: #ffffff; font-weight: 800; font-size: 13px; padding: 12px 22px;
+            border-radius: 30px; text-decoration: none; text-transform: uppercase;
+            display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 14px rgba(234, 88, 12, 0.35);
+            cursor: pointer; border: none;
+        }
+
+        /* HERO SECTION */
+        .hero {
+            background: linear-gradient(135deg, #0f172a 0%, #1e40af 50%, #2563eb 100%);
+            color: white; padding: 60px 5% 80px 5%; display: flex; justify-content: center;
+        }
+
+        .hero-container {
+            max-width: 1140px; width: 100%; display: grid;
+            grid-template-columns: 1.1fr 0.9fr; gap: 40px; align-items: center;
+        }
+
+        @media (max-width: 900px) { .hero-container { grid-template-columns: 1fr; text-align: center; } }
+
+        .timer-badge {
+            display: inline-flex; align-items: center; gap: 8px; background: #facc15;
+            color: #422006; font-weight: 900; font-size: 12px; padding: 6px 14px;
+            border-radius: 30px; margin-bottom: 15px; text-transform: uppercase;
+        }
+
+        .hero h1 { font-size: 40px; font-weight: 900; line-height: 1.15; margin-bottom: 20px; letter-spacing: -1px; }
+        @media (max-width: 600px) { .hero h1 { font-size: 30px; } }
+
+        .hero p { font-size: 16px; color: #dbeafe; margin-bottom: 25px; line-height: 1.6; }
+        .hero-price { font-size: 38px; font-weight: 900; color: #ffffff; margin-bottom: 20px; }
+        .hero-price span { font-size: 13px; font-weight: 600; color: #bfdbfe; margin-left: 8px; }
+
+        .btn-laranja {
+            display: inline-block; background-color: #ea580c; color: white;
+            font-size: 18px; font-weight: 800; padding: 16px 36px; border-radius: 30px;
+            text-decoration: none; box-shadow: 0 10px 25px rgba(234, 88, 12, 0.4);
+            border: none; cursor: pointer; text-align: center; transition: all 0.2s;
+        }
+        .btn-laranja:hover { background-color: #c2410c; transform: translateY(-2px); }
+
+        .hero-checks { display: flex; gap: 15px; font-size: 12px; color: #dbeafe; margin-top: 20px; flex-wrap: wrap; }
+        @media (max-width: 900px) { .hero-checks { justify-content: center; } }
+
+        /* MOCKUP DEMONSTRAÇÃO */
+        .card-preview-wrapper { display: flex; justify-content: center; width: 100%; }
+        .official-card-mockup {
+            width: 100%; max-width: 440px; background: #ffffff; border-radius: 16px;
+            padding: 20px; color: #0f172a; box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+            border: 2px solid #e2e8f0; position: relative; text-align: left;
+        }
+
+        .mockup-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 12px; }
+        .mockup-brand-official { display: flex; align-items: center; gap: 8px; }
+        .mockup-brand-logo-text { font-size: 26px; font-weight: 900; color: #1e3a8a; letter-spacing: -1.5px; line-height: 1; }
+        .mockup-brand-subtext { display: flex; flex-direction: column; border-left: 2px solid #cbd5e1; padding-left: 6px; }
+        .mockup-brand-subtext span:first-child { font-size: 8px; font-weight: 800; color: #0f172a; line-height: 1; }
+        .mockup-brand-subtext span:last-child { font-size: 7px; font-weight: 700; color: #2563eb; line-height: 1; margin-top: 2px; }
+        .mockup-badge { font-size: 8px; font-weight: 800; background: #16a34a; color: white; padding: 4px 8px; border-radius: 4px; display: flex; align-items: center; gap: 4px; }
+
+        .mockup-grid { display: grid; grid-template-columns: 90px 1fr 75px; gap: 12px; align-items: start; }
+        .mockup-photo { width: 90px; height: 115px; border-radius: 6px; object-fit: cover; border: 1px solid #cbd5e1; }
+        .mockup-info { display: flex; flex-direction: column; gap: 4px; font-size: 11px; color: #334155; }
+        .mockup-info strong { font-size: 13px; color: #0f172a; text-transform: uppercase; line-height: 1.1; }
+        .mockup-qr-side { display: flex; flex-direction: column; align-items: center; gap: 6px; background: #f8fafc; padding: 6px; border-radius: 8px; border: 1px solid #e2e8f0; }
+        .mockup-qr-img { width: 65px; height: 65px; }
+        .mockup-val { font-size: 7px; font-weight: 900; background: #dc2626; color: white; padding: 3px 2px; border-radius: 3px; text-align: center; width: 100%; }
+
+        /* FAIXA AMARELA */
+        .stats-bar { background-color: #eab308; padding: 20px 5%; display: flex; justify-content: center; }
+        .stats-container { max-width: 1140px; width: 100%; display: grid; grid-template-columns: repeat(6, 1fr); gap: 15px; text-align: center; }
+        @media (max-width: 768px) { .stats-container { grid-template-columns: repeat(3, 1fr); gap: 20px; } }
+        .stat-item h5 { font-size: 15px; font-weight: 900; color: #0f172a; }
+        .stat-item p { font-size: 11px; font-weight: 700; color: #451a03; }
+
+        /* ÁREA DE LOGIN ESTUDANTE */
+        .login-box-container {
+            background: #f1f5f9; padding: 35px 5%; text-align: center; border-top: 2px solid #e2e8f0; border-bottom: 2px solid #e2e8f0;
+        }
+        .login-card {
+            max-width: 480px; margin: 0 auto; background: #ffffff; padding: 25px; border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06); border: 1px solid #cbd5e1;
+        }
+
+        /* SEÇÕES DE CONTEÚDO */
+        .section-padding { padding: 70px 5%; display: flex; justify-content: center; }
+        .content-limit { max-width: 1000px; width: 100%; }
+        .sub-orange { font-size: 11px; font-weight: 900; color: #c2410c; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+        .section-title { font-size: 30px; font-weight: 900; color: #0f172a; margin-bottom: 20px; letter-spacing: -0.5px; }
+        .text-body { font-size: 15px; color: #475569; line-height: 1.7; margin-bottom: 15px; }
+        .bg-light { background-color: #f8fafc; }
+
+        /* CARDS ONDE VALE */
+        .cards-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-top: 30px; }
+        @media (max-width: 768px) { .cards-grid-4 { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 480px) { .cards-grid-4 { grid-template-columns: 1fr; } }
+
+        .card-onde-vale {
+            background: white; border-radius: 14px; overflow: hidden;
+            border: 1px solid #e2e8f0; box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+            transition: transform 0.2s;
+        }
+        .card-onde-vale:hover { transform: translateY(-5px); }
+        .card-onde-vale img { width: 100%; height: 140px; object-fit: cover; }
+        .card-onde-vale-content { padding: 18px; }
+        .card-onde-vale-content h4 { font-size: 15px; font-weight: 800; color: #0f172a; margin-bottom: 6px; }
+        .card-onde-vale-content p { font-size: 12px; color: #64748b; line-height: 1.5; }
+
+        .fast-delivery-banner {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white; border-radius: 16px; padding: 30px; margin-top: 40px;
+            display: flex; align-items: center; justify-content: space-between; gap: 20px;
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.25);
+        }
+        @media (max-width: 768px) { .fast-delivery-banner { flex-direction: column; text-align: center; } }
+        .fast-delivery-banner h3 { font-size: 22px; font-weight: 900; }
+        .fast-delivery-banner p { font-size: 14px; color: #ecfdf5; margin-top: 4px; }
+
+        .faq-accordion { display: flex; flex-direction: column; gap: 12px; margin-top: 30px; }
+        .faq-box { background: white; border: 1px solid #e2e8f0; border-radius: 10px; padding: 20px; }
+        .faq-box h4 { font-size: 15px; font-weight: 700; color: #0f172a; display: flex; justify-content: space-between; align-items: center; }
+        .faq-box p { font-size: 13px; color: #64748b; margin-top: 10px; line-height: 1.6; }
+
+        /* ÁREA DE FORMULÁRIO DEDICADO */
+        #form-section {
+            display: none; padding: 60px 5%; background: #f8fafc; min-height: 85vh;
+            justify-content: center; align-items: flex-start;
+        }
+
+        .modal-form-wrapper {
+            background: #ffffff; border-radius: 20px; max-width: 580px; width: 100%;
+            padding: 30px; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            border: 1px solid #e2e8f0;
+        }
+
+        .step-progress-bar {
+            display: flex; justify-content: space-between; margin: 20px 0 25px 0; position: relative;
+        }
+        .step-progress-bar::before {
+            content: ''; position: absolute; top: 50%; left: 0; right: 0; height: 3px;
+            background: #e2e8f0; z-index: 1; transform: translateY(-50%);
+        }
+        .progress-line-active {
+            position: absolute; top: 50%; left: 0; height: 3px; background: #2563eb;
+            z-index: 2; transform: translateY(-50%); transition: width 0.3s ease; width: 0%;
+        }
+        .step-indicator {
+            width: 32px; height: 32px; border-radius: 50%; background: #ffffff; border: 3px solid #cbd5e1;
+            display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 12px;
+            color: #64748b; z-index: 3; transition: all 0.3s;
+        }
+        .step-indicator.active { border-color: #2563eb; background: #2563eb; color: white; }
+        .step-indicator.completed { border-color: #16a34a; background: #16a34a; color: white; }
+
+        .form-step { display: none; }
+        .form-step.active-step { display: block; }
+
+        .form-grid { display: grid; grid-template-columns: 1fr; gap: 15px; margin-top: 10px; }
+        .form-group { display: flex; flex-direction: column; gap: 6px; text-align: left; position: relative; }
+        label { font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase; }
+        input, select {
+            padding: 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px;
+            background-color: #f8fafc; font-family: 'Inter', sans-serif; width: 100%;
+        }
+
+        .cpf-status-badge {
+            position: absolute; right: 12px; top: 35px; font-size: 11px; font-weight: 800; color: #16a34a; display: none;
+        }
+
+        .autocomplete-items {
+            position: absolute; border: 1px solid #cbd5e1; border-top: none; z-index: 99;
+            top: 100%; left: 0; right: 0; background-color: #fff; max-height: 150px; overflow-y: auto; border-radius: 0 0 8px 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .autocomplete-items div { padding: 10px; cursor: pointer; font-size: 13px; color: #334155; }
+        .autocomplete-items div:hover { background-color: #e2e8f0; }
+
+        .photo-upload-box {
+            display: flex; flex-direction: column; align-items: center; gap: 15px;
+            border: 2px dashed #94a3b8; padding: 20px; border-radius: 12px; background: #f8fafc; cursor: pointer; text-align: center;
+        }
+        .photo-preview-circle {
+            width: 100px; height: 130px; border-radius: 8px; border: 2px solid #2563eb;
+            object-fit: cover; display: none; box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+
+        .checkbox-group {
+            display: flex; gap: 12px; align-items: flex-start; margin-top: 20px;
+            background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; text-align: left;
+        }
+        .checkbox-group input { margin-top: 3px; transform: scale(1.2); }
+        .checkbox-group label { font-size: 12px; color: #475569; text-transform: none; font-weight: 500; }
+
+        .step-nav-buttons { display: flex; gap: 12px; margin-top: 25px; }
+        .btn-step-prev { background: #e2e8f0; color: #475569; font-weight: 800; padding: 14px; border-radius: 8px; border: none; cursor: pointer; width: 35%; }
+        .btn-step-next { background: #2563eb; color: white; font-weight: 800; padding: 14px; border-radius: 8px; border: none; cursor: pointer; width: 100%; text-transform: uppercase; }
+
+        .btn-submit-form {
+            background-color: #2563eb; color: white; font-weight: 800; font-size: 16px;
+            padding: 16px; border-radius: 10px; border: none; width: 100%; margin-top: 20px;
+            cursor: pointer; text-transform: uppercase; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+        }
+        .btn-submit-form:disabled { background-color: #94a3b8; cursor: not-allowed; box-shadow: none; }
+
+        /* MODAL PIX */
+        #pix-modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85); z-index: 3000; justify-content: center; align-items: center; padding: 20px;
+        }
+        .modal-content-box {
+            background: white; padding: 30px; border-radius: 20px; width: 100%; max-width: 420px;
+            text-align: center; display: flex; flex-direction: column; align-items: center; gap: 15px;
+        }
+        .pix-qr-code { width: 180px; height: 180px; border: 1px solid #cbd5e1; border-radius: 8px; padding: 6px; }
+        .pix-code-input { width: 100%; font-size: 11px; padding: 10px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; text-align: center; font-family: monospace; }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #2563eb; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 10px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* TELA DE EXIBIÇÃO DA CARTEIRINHA EMITIDA */
+        #preview-section { display: none; flex-direction: column; align-items: center; width: 100%; padding: 50px 5%; }
+        
+        .protected-card-container {
+            position: relative; overflow: hidden; border-radius: 16px; transition: filter 0.3s ease;
+        }
+
+        .anti-print-watermark {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 90; display: flex; flex-direction: column;
+            justify-content: space-around; align-items: center; opacity: 0.08;
+            font-size: 16px; font-weight: 900; color: #fff; transform: rotate(-25deg);
+        }
+
+        .live-clock-badge {
+            background: #16a34a; color: white; font-size: 13px; font-weight: 900;
+            padding: 8px 18px; border-radius: 20px; margin-bottom: 20px;
+            display: inline-flex; align-items: center; gap: 8px;
+        }
+
+        .action-buttons-group {
+            display: flex; gap: 12px; margin-top: 25px; flex-wrap: wrap; justify-content: center; width: 100%; max-width: 480px;
+        }
+
+        .btn-action-card {
+            padding: 14px 22px; border-radius: 30px; font-weight: 800; font-size: 14px;
+            border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); transition: all 0.2s; text-decoration: none;
+        }
+        .btn-action-card:hover { transform: translateY(-2px); }
+        .btn-google-wallet { background: #0f172a; color: white; border: 1px solid #3b82f6; }
+        .btn-download-img { background: #16a34a; color: white; }
+        .btn-download-pdf { background: #334155; color: white; }
+
+        .blue-cta-banner { background: linear-gradient(135deg, #0f172a 0%, #1e40af 100%); color: white; text-align: center; padding: 70px 5%; }
+        footer { background-color: #090d16; color: #64748b; text-align: center; padding: 40px 5%; font-size: 12px; border-top: 1px solid #1e293b; }
+    </style>
+</head>
+<body oncontextmenu="return false;">
+
+    <!-- CABEÇALHO -->
+    <header>
+        <div class="brand-header-group">
+            <div onclick="mostrarLanding()" class="brand-logo-official">
+                <div class="logo-shield-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+                <div>
+                    <div class="logo-title-bold">DNE<span>OFICIAL</span></div>
+                    <div class="logo-subtitle-official">Documento do Estudante</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="header-trust-badges">
+            <div class="badge-price-highlight"><i class="fa-solid fa-tag"></i> R$ 10,00 (Sem Frete)</div>
+            <div class="badge-trust-item"><i class="fa-solid fa-robot" style="color:#2563eb;"></i> Agente de IA Ativo</div>
+            <div class="badge-trust-item"><i class="fa-solid fa-shield-check"></i> Antifraude ITI</div>
+        </div>
+
+        <button onclick="irParaFormulario()" class="btn-cta-header">
+            <i class="fa-solid fa-mobile-screen-button"></i> Emitir por R$ 10,00
+        </button>
+    </header>
+
+    <!-- CONTAINER DA PÁGINA INICIAL -->
+    <div id="landing-container">
+        <!-- HERO PRINCIPAL -->
+        <section class="hero">
+            <div class="hero-container">
+                <div>
+                    <div class="timer-badge">
+                        <i class="fa-solid fa-robot"></i> Análise e Liberação Instantânea por IA
+                    </div>
+                    <div class="hero-subtag">Emissão Oficial • UNE, UBES e ANPG</div>
+                    <h1>Carteirinha de estudante: 50% em cinemas e shows</h1>
+                    <p>Solicite online em poucos minutos com <strong>verificação automática por Inteligência Artificial</strong> e receba sua versão digital oficial no celular instantaneamente.</p>
+                    
+                    <div class="hero-price">R$ 10,00 <span>• taxa única sem frete • válida até 31/03/2027</span></div>
+
+                    <button onclick="irParaFormulario()" class="btn-laranja">Solicitar Minha Carteirinha →</button>
+
+                    <div class="hero-checks">
+                        <span><i class="fa-solid fa-check-circle" style="color:#22c55e;"></i> Aprovação Instantânea por IA</span>
+                        <span><i class="fa-solid fa-check-circle" style="color:#22c55e;"></i> Válida em todo o Brasil</span>
+                        <span><i class="fa-solid fa-check-circle" style="color:#22c55e;"></i> Certificação ITI</span>
+                    </div>
+                </div>
+
+                <!-- MOCKUP CARTEIRINHA DE MOCAP -->
+                <div class="card-preview-wrapper">
+                    <div class="official-card-mockup">
+                        <div class="mockup-header">
+                            <div class="mockup-brand-official">
+                                <div class="mockup-brand-logo-text">dne</div>
+                                <div class="mockup-brand-subtext">
+                                    <span>Documento do Estudante</span>
+                                    <span>MODELO NACIONAL OFICIAL</span>
+                                </div>
+                            </div>
+                            <div class="mockup-badge"><i class="fa-solid fa-robot"></i> IA VERIFICADA</div>
+                        </div>
+                        
+                        <div class="mockup-grid">
+                            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=250&auto=format&fit=crop" alt="Estudante" class="mockup-photo">
+                            <div class="mockup-info">
+                                <strong>Mariana Silva Ramos</strong>
+                                <span>CPF: 123.456.789-00</span>
+                                <span>Nasc: 16/10/2001</span>
+                                <span style="color:#2563eb; font-weight:700;">UFSC - Universidade Federal</span>
+                                <span style="font-weight:900; color:#1e3a8a; font-size:11px; margin-top:2px;">ANO: 2026 / 2027</span>
+                            </div>
+                            <div class="mockup-qr-side">
+                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=DNE-OFICIAL-VERIFICADO-IA" alt="QR Code" class="mockup-qr-img">
+                                <div class="mockup-val">VÁLIDA ATÉ 31/03/2027</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAIXA AMARELA DE ESTATÍSTICAS -->
+        <div class="stats-bar">
+            <div class="stats-container">
+                <div class="stat-item"><h5>Oficial</h5><p>UNE • UBES • ANPG</p></div>
+                <div class="stat-item"><h5>Agente de IA</h5><p>liberação imediata</p></div>
+                <div class="stat-item"><h5>9,1/10</h5><p>Reclame Aqui</p></div>
+                <div class="stat-item"><h5>+10 mi</h5><p>carteirinhas emitidas</p></div>
+                <div class="stat-item"><h5>27</h5><p>estados atendidos</p></div>
+                <div class="stat-item"><h5>ITI</h5><p>certificação digital</p></div>
+            </div>
+        </div>
+
+        <!-- ÁREA DE LOGIN DO ESTUDANTE -->
+        <div class="login-box-container">
+            <div class="login-card">
+                <h3 style="font-size: 18px; font-weight: 800; color: #0f172a; margin-bottom: 6px;">
+                    <i class="fa-solid fa-id-card" style="color:#2563eb;"></i> Já comprou sua carteirinha?
+                </h3>
+                <p style="font-size: 13px; color: #64748b; margin-bottom: 15px;">Aceda com a sua senha e CPF cadastrados:</p>
+                
+                <a href="login.html" style="display: inline-block; background: #2563eb; color: white; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 800; font-size: 14px;">
+                    Fazer Login na Carteirinha →
+                </a>
+            </div>
+        </div>
+
+        <!-- SEÇÃO O QUE É -->
+        <section class="section-padding">
+            <div class="content-limit">
+                <div class="sub-orange">O QUE É</div>
+                <h2 class="section-title">Carteirinha de estudante, CIE e DNE são a mesma coisa?</h2>
+                <p class="text-body">São, sim! <strong>“Carteirinha de estudante”</strong> é o nome popular. O nome na lei é <strong>CIE — Carteira de Identificação Estudantil</strong> (Lei 12.933/2013). O <strong>DNE é a CIE no modelo único nacional</strong> com certificação digital do ITI.</p>
+                <p class="text-body">Com a nossa tecnologia com <strong>agente de Inteligência Artificial</strong>, você solicita a sua online por apenas R$ 10,00 e recebe a <strong>versão digital oficial no celular de forma instantânea</strong>.</p>
+            </div>
+        </section>
+
+        <!-- SEÇÃO ONDE VALE -->
+        <section class="section-padding bg-light">
+            <div class="content-limit">
+                <div class="sub-orange">ONDE VALE</div>
+                <h2 class="section-title">Onde a sua carteirinha dá meia-entrada</h2>
+                <p class="text-body">A meia-entrada é um direito garantido pela <strong>Lei Federal 12.933/2013</strong> em 50% do valor do ingresso:</p>
+
+                <div class="cards-grid-4">
+                    <div class="card-onde-vale">
+                        <img src="https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=400&auto=format&fit=crop" alt="Cinemas">
+                        <div class="card-onde-vale-content"><h4>Cinemas</h4><p>50% de desconto em todas as sessões e redes.</p></div>
+                    </div>
+                    <div class="card-onde-vale">
+                        <img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=400&auto=format&fit=crop" alt="Shows">
+                        <div class="card-onde-vale-content"><h4>Shows e Festivais</h4><p>Aproveite os maiores eventos pagando metade.</p></div>
+                    </div>
+                    <div class="card-onde-vale">
+                        <img src="https://images.unsplash.com/photo-1460723237483-7a6dc9d0b212?q=80&w=400&auto=format&fit=crop" alt="Teatros">
+                        <div class="card-onde-vale-content"><h4>Teatros e Museus</h4><p>Acesso à cultura em todo o território nacional.</p></div>
+                    </div>
+                    <div class="card-onde-vale">
+                        <img src="https://images.unsplash.com/photo-1518091043644-c1d4457512c6?q=80&w=400&auto=format&fit=crop" alt="Jogos de Futebol">
+                        <div class="card-onde-vale-content"><h4>Jogos de Futebol</h4><p>Garanta seu lugar no estádio apoiando seu time.</p></div>
+                    </div>
+                </div>
+
+                <div class="fast-delivery-banner">
+                    <div>
+                        <h3><i class="fa-solid fa-robot"></i> Precisa da carteirinha para hoje?</h3>
+                        <p>Processo 100% automatizado por Inteligência Artificial. Pague no Pix e tenha sua carteirinha no celular <strong>imediatamente</strong>.</p>
+                    </div>
+                    <button onclick="irParaFormulario()" class="btn-laranja" style="max-width: 250px;">Pedir Agora →</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- PERGUNTAS FREQUENTES -->
+        <section class="section-padding">
+            <div class="content-limit">
+                <div class="sub-orange">DÚVIDAS FREQUENTES</div>
+                <h2 class="section-title">Perguntas sobre a carteirinha de estudante</h2>
+
+                <div class="faq-accordion">
+                    <div class="faq-box">
+                        <h4><i class="fa-solid fa-circle-question" style="color:#2563eb;"></i> Em quanto tempo a carteirinha fica pronta?</h4>
+                        <p>Com a validação automática via Inteligência Artificial, sua carteirinha digital é disponibilizada <strong>instantaneamente</strong> após a confirmação do Pix.</p>
+                    </div>
+                    <div class="faq-box">
+                        <h4><i class="fa-solid fa-circle-question" style="color:#2563eb;"></i> Como faço para ver minha carteirinha depois de ter pago?</h4>
+                        <p>Basta aceder à nossa página de <a href="login.html" style="color:#2563eb; text-decoration:underline;">Login</a> e colocar o seu CPF e senha criados no momento do registo.</p>
+                    </div>
+                    <div class="faq-box">
+                        <h4><i class="fa-solid fa-circle-question" style="color:#2563eb;"></i> Até quando é válida?</h4>
+                        <p>Até 31 de março do ano seguinte ao da solicitação (Lei 12.933/2013).</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- BANNER FINAL -->
+        <section class="blue-cta-banner">
+            <h2>Garanta a sua meia-entrada oficial agora mesmo</h2>
+            <p>Aprovação e verificação por Inteligência Artificial no seu celular por apenas R$ 10,00.</p>
+            <button onclick="irParaFormulario()" class="btn-laranja" style="margin-top: 15px;">Solicitar Minha Carteirinha →</button>
+        </section>
+    </div>
+
+    <!-- SEÇÃO DEDICADA DE FORMULÁRIO -->
+    <div id="form-section">
+        <div class="modal-form-wrapper">
+            <h2 style="font-size: 22px; font-weight: 900; color: #0f172a; text-align: center;">Solicitação DNE Oficial</h2>
+            <p style="font-size: 12px; color: #16a34a; font-weight: 700; text-align: center; margin-top: 4px;">
+                <i class="fa-solid fa-robot"></i> Liberação Instantânea via Agente de IA • Passo <span id="current-step-num">1</span> de 3
+            </p>
+
+            <div class="step-progress-bar">
+                <div class="progress-line-active" id="progress-line"></div>
+                <div class="step-indicator active" id="ind-1">1</div>
+                <div class="step-indicator" id="ind-2">2</div>
+                <div class="step-indicator" id="ind-3">3</div>
+            </div>
+
+            <form id="cie-form" onsubmit="iniciarPagamentoPix(event)">
+                <!-- ETAPA 1 -->
+                <div class="form-step active-step" id="step-1">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Nome Completo</label>
+                            <input type="text" id="input-nome" placeholder="Conforme documento oficial" required minlength="5" oninput="validarEtapa1()">
+                        </div>
+                        <div class="form-group">
+                            <label>CPF</label>
+                            <input type="text" id="input-cpf" placeholder="000.000.000-00" maxlength="14" required oninput="mascaraCPF(this)">
+                            <span class="cpf-status-badge" id="cpf-ok">✓ VÁLIDO</span>
+                        </div>
+                        <div class="form-group">
+                            <label>E-mail (Para acesso e recuperação)</label>
+                            <input type="email" id="input-email" placeholder="seu-email@exemplo.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Criar Senha de Acesso</label>
+                            <input type="password" id="input-senha" placeholder="Mínimo 6 caracteres" required minlength="6">
+                        </div>
+                        <div class="form-group">
+                            <label>Data de Nascimento</label>
+                            <input type="date" id="input-nasc" required max="2015-12-31" onchange="validarEtapa1()">
+                        </div>
+                    </div>
+                    <div class="step-nav-buttons">
+                        <button type="button" class="btn-step-next" id="btn-next-1" onclick="proximoPasso(2)" disabled>Próximo: Dados Acadêmicos →</button>
+                    </div>
+                </div>
+
+                <!-- ETAPA 2 -->
+                <div class="form-step" id="step-2">
+                    <div class="form-grid">
+                        <div class="form-group" style="position:relative;">
+                            <label>Instituição de Ensino</label>
+                            <input type="text" id="input-inst" placeholder="Digite ex: USP, UFSC, Estácio..." autocomplete="off" oninput="autocompleteInst(this)">
+                            <div class="autocomplete-items" id="autocomplete-list"></div>
+                        </div>
+                        <div class="form-group">
+                            <label>Nº de Matrícula (RA)</label>
+                            <input type="text" id="input-matricula" placeholder="Registro acadêmico" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Curso</label>
+                            <input type="text" id="input-curso" placeholder="Ex: Engenharia, Direito, Ensino Médio" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Escolaridade</label>
+                            <select id="input-nivel" required>
+                                <option value="EDUCAÇÃO BÁSICA">Educação Básica (Médio)</option>
+                                <option value="TÉCNICO">Ensino Técnico</option>
+                                <option value="GRADUAÇÃO" selected>Graduação (Superior)</option>
+                                <option value="PÓS-GRADUAÇÃO">Pós-Graduação</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="step-nav-buttons">
+                        <button type="button" class="btn-step-prev" onclick="proximoPasso(1)">Voltar</button>
+                        <button type="button" class="btn-step-next" onclick="proximoPasso(3)">Próximo: Foto 3x4 →</button>
+                    </div>
+                </div>
+
+                <!-- ETAPA 3 -->
+                <div class="form-step" id="step-3">
+                    <div class="form-group">
+                        <label>Foto Oficial 3x4</label>
+                        <div class="photo-upload-box" onclick="document.getElementById('input-foto').click()">
+                            <img id="photo-preview-img" class="photo-preview-circle" src="" alt="Preview Foto">
+                            <span id="file-label-text">📸 Clique para carregar sua foto 3x4</span>
+                            <input type="file" id="input-foto" accept="image/jpeg, image/png" required onchange="previewImage(event)" style="display:none;">
+                        </div>
+                    </div>
+
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="termos" required onchange="validarEtapa3()">
+                        <label for="termos">Declaro sob as penas da lei que os dados informados são autênticos para fins de emissão oficial.</label>
+                    </div>
+
+                    <div class="step-nav-buttons">
+                        <button type="button" class="btn-step-prev" onclick="proximoPasso(2)">Voltar</button>
+                        <button type="submit" class="btn-submit-form" id="btn-submit" disabled style="margin-top:0;">Pagar R$ 10,00 e Emitir</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL PIX -->
+    <div id="pix-modal">
+        <div class="modal-content-box">
+            <h3 style="font-size: 18px; font-weight: 900;">Pagamento via Pix (R$ 10,00)</h3>
+            <p style="font-size: 12px; color: #64748b;">Escaneie ou copie o código abaixo. O Agente de IA fará a liberação automática!</p>
+            <img id="pix-qrcode-img" class="pix-qr-code" src="" alt="QR Code Pix">
+            <input type="text" id="pix-copia-cola" class="pix-code-input" readonly>
+            <button class="btn-submit-form" style="background:#16a34a; margin-top:5px;" onclick="copiarPix()">Copiar Código Pix</button>
+            <div style="margin-top: 10px;">
+                <div class="spinner"></div>
+                <p style="font-size: 12px; font-weight: bold; color: #2563eb;" id="status-text-ia">
+                    🤖 Agente de IA aguardando confirmação bancária...
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- TELA DA CARTEIRINHA LIBERADA -->
+    <div id="preview-section">
+        <div class="live-clock-badge">
+            <i class="fa-solid fa-robot"></i> APROVADO POR AGENTE DE IA • DOCUMENTO ATIVO
+        </div>
+
+        <div class="protected-card-container" id="card-to-protect">
+            <div class="anti-print-watermark">
+                <div>DNE OFICIAL • USO PESSOAL</div>
+                <div>VALIDAÇÃO DIGITAL ATIVA</div>
+            </div>
+
+            <div class="official-card-mockup" id="pdf-content-area" style="max-width: 460px; transform: none; margin: 0 auto; background: #0f172a; color: white; border: 2px solid #3b82f6;">
+                <div class="mockup-header" style="border-bottom: 2px solid #1e293b;">
+                    <div class="mockup-brand-official">
+                        <div class="mockup-brand-logo-text" style="color:#60a5fa;">dne</div>
+                        <div class="mockup-brand-subtext">
+                            <span style="color:#f8fafc;">DOCUMENTO DO ESTUDANTE</span>
+                            <span style="color:#94a3b8;">REPÚBLICA FEDERATIVA DO BRASIL</span>
+                        </div>
+                    </div>
+                    <div class="mockup-badge" style="background:#16a34a;"><i class="fa-solid fa-check"></i> AUTÊNTICO</div>
+                </div>
+
+                <div class="mockup-grid" style="grid-template-columns: 100px 1fr; align-items: center;">
+                    <img id="card-img" src="" alt="Foto Aluno" style="width:100px; height:130px; border-radius:6px; object-fit:cover; border: 2px solid #3b82f6;">
+                    
+                    <div class="mockup-info" style="color: #cbd5e1; gap: 5px;">
+                        <span style="font-size:9px; color:#94a3b8; text-transform:uppercase;">Nome do Estudante</span>
+                        <strong id="card-nome" style="font-size:14px; color: #ffffff;">NOME ALUNO</strong>
+                        
+                        <div style="display: flex; gap: 15px; margin-top: 4px;">
+                            <div>
+                                <span style="font-size:8px; color:#94a3b8;">CPF</span>
+                                <div id="card-cpf" style="font-size:11px; color:#f8fafc; font-weight:600;"></div>
+                            </div>
+                            <div>
+                                <span style="font-size:8px; color:#94a3b8;">NASCIMENTO</span>
+                                <div id="card-nasc" style="font-size:11px; color:#f8fafc; font-weight:600;"></div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <span style="font-size:8px; color:#94a3b8;">INSTITUIÇÃO</span>
+                            <div id="card-inst" style="font-size:11px; color:#60a5fa; font-weight:700;"></div>
+                        </div>
+
+                        <div style="display: flex; gap: 15px;">
+                            <div>
+                                <span style="font-size:8px; color:#94a3b8;">CURSO</span>
+                                <div id="card-curso-resumo" style="font-size:10px; color:#f8fafc;"></div>
+                            </div>
+                            <div>
+                                <span style="font-size:8px; color:#94a3b8;">MATRÍCULA</span>
+                                <div id="card-matricula" style="font-size:10px; color:#f8fafc;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 15px; padding-top: 12px; border-top: 1px solid #1e293b; display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <img id="card-qrcode" src="" style="width: 75px; height: 75px; background: white; padding: 4px; border-radius: 4px;" alt="QR Code">
+                        <div style="font-size: 8px; color: #94a3b8; line-height: 1.3;">
+                            <strong style="color: #f8fafc; font-size: 9px;">Certificação Digital ITI</strong><br>
+                            Padrão ICP-Brasil • Lei 12.933/13
+                        </div>
+                    </div>
+                    <div style="background: #1e3a8a; border: 1px solid #3b82f6; padding: 8px 12px; border-radius: 6px; text-align: center;">
+                        <span style="font-size: 7px; color: #94a3b8; display: block;">VALIDADE</span>
+                        <strong id="card-validade" style="font-size: 11px; color: #ffffff;">31/03/2027</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botões atualizados: Google Wallet e Print/Download Imagem da Carteirinha -->
+        <div class="action-buttons-group">
+            <button onclick="salvarGoogleWallet()" class="btn-action-card btn-google-wallet">
+                <i class="fa-brands fa-google-pay" style="font-size:18px;"></i> Adicionar ao Google Wallet
+            </button>
+            <button onclick="baixarImagemCarteirinha()" class="btn-action-card btn-download-img">
+                <i class="fa-solid fa-image"></i> Baixar Imagem (Print)
+            </button>
+            <button onclick="gerarPDF()" class="btn-action-card btn-download-pdf">
+                <i class="fa-solid fa-file-pdf"></i> Baixar em PDF
+            </button>
+        </div>
+
+        <p style="font-size: 12px; color: #64748b; margin-top: 20px; max-width: 420px; text-align: center;">
+            <i class="fa-solid fa-shield-halved" style="color:#16a34a;"></i> Documento validado por IA e liberado com sucesso.
+        </p>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Documento Nacional do Estudante (DNE) — Em conformidade com a Lei 12.933/2013.</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
