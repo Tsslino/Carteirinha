@@ -232,7 +232,7 @@ function gerarCarteirinhaFinal() {
     iniciarProtecaoAntiPrint();
 }
 
-// Redireciona diretamente para o Render usando o URL absoluto
+// Redireciona diretamente para o Render usando o URL absoluto para o Google Pay / Wallet
 function salvarGoogleWallet() {
     const cpfTexto = document.getElementById('card-cpf').innerText;
     const cpf = cpfTexto.replace(/\D/g, ''); // Remove pontos e traços
