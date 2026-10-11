@@ -1,5 +1,5 @@
 let fotoDataUrl = "";
-const API_URL = 'https://dne-backend.onrender.com';
+const RENDER_URL = 'https://dne-backend.onrender.com'; // Usado apenas para o Google Wallet no Render
 const instList = ["USP - Universidade de São Paulo", "UFSC - Universidade Federal de Santa Catarina", "UFRJ - Univ. Federal do Rio de Janeiro", "UNICAMP", "UNESP", "PUC - Pontifícia Univ. Católica", "Estácio de Sá", "Anhanguera Educacional", "FGV - Fundação Getulio Vargas", "IFSC - Inst. Federal de Santa Catarina"];
 
 function irParaFormulario() {
@@ -113,7 +113,7 @@ function validarEtapa3() {
     document.getElementById('btn-submit').disabled = !(fotoDataUrl && termos);
 }
 
-// INTEGRAÇÃO COM O BACKEND VIA API
+// Rota de pagamento e PIX (Processado nativamente pelo Vercel via api/pagamento.js)
 async function iniciarPagamentoPix(event) {
     event.preventDefault();
     
@@ -122,28 +122,25 @@ async function iniciarPagamentoPix(event) {
     
     document.getElementById('pix-modal').style.display = 'flex';
     const statusText = document.getElementById('status-text-ia');
-    if(statusText) statusText.innerText = "🤖 Gerando Pix de teste...";
+    if(statusText) statusText.innerText = "🤖 Gerando Pix no Mercado Pago...";
 
     try {
-        const response = await fetch(`${API_URL}/api/pagamento`, {
+        const response = await fetch('/api/pagamento', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ tipo: 'emissao', nome: nome, cpf: cpf })
+            body: JSON.stringify({ nome: nome, cpf: cpf })
         });
 
         const data = await response.json();
 
-        if (data.qr_code || data.id) {
+        if (data.qr_code) {
+            document.getElementById('pix-qrcode-img').src = `data:image/jpeg;base64,${data.qr_code_base64}`;
             document.getElementById('pix-copia-cola').value = data.qr_code;
-            if(statusText) statusText.innerText = "🤖 Pix gerado com sucesso! Simulando aprovação...";
+            if(statusText) statusText.innerText = "🤖 Pix gerado! Aguardando pagamento...";
 
-            setTimeout(() => {
-                document.getElementById('pix-modal').style.display = 'none';
-                salvarCarteirinhaPagamento();
-                gerarCarteirinhaFinal();
-            }, 3000);
+            verificarStatusPagamento(data.id);
         } else {
-            alert('Erro ao gerar o Pix. Verifique os dados.');
+            alert(data.error || 'Erro ao gerar o Pix.');
             document.getElementById('pix-modal').style.display = 'none';
         }
     } catch (error) {
@@ -156,7 +153,7 @@ async function iniciarPagamentoPix(event) {
 function verificarStatusPagamento(paymentId) {
     const intervalo = setInterval(async () => {
         try {
-            const res = await fetch(`${API_URL}/api/pagamento?action=verificar&id=${paymentId}`);
+            const res = await fetch(`/api/pagamento?action=verificar&id=${paymentId}`);
             const data = await res.json();
 
             if (data.status === 'approved') {
@@ -187,7 +184,7 @@ async function salvarCarteirinhaPagamento() {
     };
 
     try {
-        await fetch(`${API_URL}/api/pagamento?action=salvar`, {
+        await fetch('/api/pagamento?action=salvar', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(dadosAluno)
@@ -235,15 +232,15 @@ function gerarCarteirinhaFinal() {
     iniciarProtecaoAntiPrint();
 }
 
-// Envia o CPF limpo para a rota do Google Wallet no Render
+// Redireciona para o Google Wallet no Render (que possui as credenciais privadas do Google)
 function salvarGoogleWallet() {
     const cpfTexto = document.getElementById('card-cpf').innerText;
-    const cpf = cpfTexto.replace(/\D/g, ''); // Remove pontos e traços
+    const cpf = cpfTexto.replace(/\D/g, ''); // Limpa o CPF
     if (!cpf) {
         alert('CPF não identificado.');
         return;
     }
-    window.location.href = `${API_URL}/api/carteira?action=google&cpf=${cpf}`;
+    window.location.href = `${RENDER_URL}/api/carteira?action=google&cpf=${cpf}`;
 }
 
 function baixarImagemCarteirinha() {
