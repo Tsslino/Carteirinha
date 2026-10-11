@@ -1,5 +1,5 @@
 let fotoDataUrl = "";
-const RENDER_URL = 'https://dne-backend.onrender.com'; // Usado apenas para o Google Wallet no Render
+const RENDER_URL = 'https://dne-backend.onrender.com';
 const instList = ["USP - Universidade de São Paulo", "UFSC - Universidade Federal de Santa Catarina", "UFRJ - Univ. Federal do Rio de Janeiro", "UNICAMP", "UNESP", "PUC - Pontifícia Univ. Católica", "Estácio de Sá", "Anhanguera Educacional", "FGV - Fundação Getulio Vargas", "IFSC - Inst. Federal de Santa Catarina"];
 
 function irParaFormulario() {
@@ -113,7 +113,7 @@ function validarEtapa3() {
     document.getElementById('btn-submit').disabled = !(fotoDataUrl && termos);
 }
 
-// Rota de pagamento e PIX (Processado nativamente pelo Vercel via api/pagamento.js)
+// Rota de pagamento e PIX (Processado pelo Vercel via api/pagamento.js)
 async function iniciarPagamentoPix(event) {
     event.preventDefault();
     
@@ -232,10 +232,10 @@ function gerarCarteirinhaFinal() {
     iniciarProtecaoAntiPrint();
 }
 
-// Redireciona para o Google Wallet no Render (que possui as credenciais privadas do Google)
+// Redireciona diretamente para o Render usando o URL absoluto
 function salvarGoogleWallet() {
     const cpfTexto = document.getElementById('card-cpf').innerText;
-    const cpf = cpfTexto.replace(/\D/g, ''); // Limpa o CPF
+    const cpf = cpfTexto.replace(/\D/g, ''); // Remove pontos e traços
     if (!cpf) {
         alert('CPF não identificado.');
         return;
