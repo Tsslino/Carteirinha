@@ -42,7 +42,7 @@
     <!-- CONTEÚDO PRINCIPAL -->
     <main class="max-w-4xl mx-auto px-4 mt-6">
         
-        <!-- PAINEL DO UTILIZADOR (Sem o aviso técnico do Supabase) -->
+        <!-- PAINEL DO UTILIZADOR -->
         <div class="bg-gray-800/90 border border-gray-700 rounded-2xl p-5 mb-6 shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 backdrop-blur-sm">
             <div>
                 <h2 id="nomeUsuario" class="text-xl md:text-2xl font-black text-white capitalize">A carregar...</h2>
@@ -86,7 +86,7 @@
                 ✕
             </button>
 
-            <!-- ÁREA DO CARTÃO PARA PRINT (Focada apenas na carteirinha) -->
+            <!-- ÁREA DO CARTÃO PARA PRINT EXATO -->
             <div id="areaPrintCarteirinha" class="bg-slate-900 p-2 rounded-2xl">
                 <div class="text-center mb-3 pb-2 border-b border-gray-800">
                     <p class="text-xs font-bold text-blue-400 uppercase tracking-widest"><i class="fa-solid fa-wallet mr-1"></i> Carteira Digital Oficial</p>
@@ -110,22 +110,19 @@
                 </div>
             </div>
 
-            <!-- BOTÃO SALVAR CARTEIRINHA (PRINT DA TELA) -->
+            <!-- BOTÃO PRINCIPAL DE SALVAR PRINT DA CARTEIRINHA -->
             <div class="mb-3">
-                <button onclick="salvarPrintCarteirinha()" class="w-full bg-green-600 hover:bg-green-500 text-white font-extrabold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-2 transition shadow-lg">
-                    <i class="fa-solid fa-download"></i> Salvar Imagem da Carteirinha
+                <button onclick="salvarPrintCarteirinha()" class="w-full bg-green-600 hover:bg-green-500 text-white font-extrabold py-3 px-3 rounded-xl text-xs flex items-center justify-center gap-2 transition shadow-lg">
+                    <i class="fa-solid fa-download text-sm"></i> Salvar Imagem da Carteirinha
                 </button>
             </div>
 
-            <!-- ADICIONAR À CARTEIRA (APPLE / GOOGLE PAY) -->
+            <!-- ADICIONAR AO GOOGLE PAY (OPCIONAL) -->
             <div class="space-y-2 pt-2 border-t border-gray-800">
-                <p class="text-[10px] text-gray-400 font-bold text-center uppercase">Salvar nas Carteiras Nativas</p>
-                <div class="grid grid-cols-2 gap-2">
-                    <button onclick="adicionarAppleWallet()" class="bg-black hover:bg-gray-800 border border-gray-700 text-white font-semibold py-2 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 transition">
-                        <i class="fa-brands fa-apple text-sm"></i> Apple Wallet
-                    </button>
-                    <button onclick="adicionarGoogleWallet()" class="bg-slate-800 hover:bg-slate-700 border border-gray-700 text-white font-semibold py-2 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 transition">
-                        <i class="fa-brands fa-google-pay text-sm text-blue-400"></i> Google Pay
+                <p class="text-[10px] text-gray-400 font-bold text-center uppercase">Carteira Digital Nativa</p>
+                <div>
+                    <button onclick="adicionarGoogleWallet()" class="w-full bg-slate-800 hover:bg-slate-700 border border-gray-700 text-white font-semibold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 transition">
+                        <i class="fa-brands fa-google-pay text-base text-blue-400"></i> Google Pay
                     </button>
                 </div>
             </div>
@@ -277,7 +274,7 @@
             document.getElementById('modalBilheteria').classList.add('hidden');
         }
 
-        // Função para tirar o print focado da carteirinha
+        // Função para gerar o print focado e limpo apenas da carteirinha
         function salvarPrintCarteirinha() {
             const element = document.getElementById('areaPrintCarteirinha');
             html2canvas(element, { scale: 3, useCORS: true }).then(canvas => {
@@ -286,11 +283,6 @@
                 link.href = canvas.toDataURL('image/png');
                 link.click();
             });
-        }
-
-        function adicionarAppleWallet() {
-            if (!cpfAtualModal) return alert('Erro ao identificar a carteirinha.');
-            window.location.href = `/api/carteira?action=apple&cpf=${cpfAtualModal}`;
         }
 
         function adicionarGoogleWallet() {
