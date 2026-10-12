@@ -348,7 +348,7 @@
         </div>
 
         <div class="header-trust-badges">
-            <div class="badge-price-highlight"><i class="fa-solid fa-tag"></i> R$ 10,00 (Sem Frete)</div>
+            <div class="badge-price-highlight"><i class="fa-solid fa-tag"></i> R$ 10,00 (Digital)</div>
             <div class="badge-trust-item"><i class="fa-solid fa-robot" style="color:#2563eb;"></i> Agente de IA Ativo</div>
             <div class="badge-trust-item"><i class="fa-solid fa-shield-check"></i> Antifraude ITI</div>
         </div>
@@ -371,7 +371,7 @@
                     <h1>Carteirinha de estudante: 50% em cinemas e shows</h1>
                     <p>Solicite online em poucos minutos com <strong>verificação automática por Inteligência Artificial</strong> e receba sua versão digital oficial no celular instantaneamente.</p>
                     
-                    <div class="hero-price">R$ 10,00 <span>• taxa única sem frete • válida até 31/03/2027</span></div>
+                    <div class="hero-price">R$ 10,00 <span>• taxa única • válida até 31/03/2027</span></div>
 
                     <button onclick="irParaFormulario()" class="btn-laranja">Solicitar Minha Carteirinha →</button>
 
@@ -533,7 +533,7 @@
                 <div class="step-indicator" id="ind-3">3</div>
             </div>
 
-            <form id="cie-form" onsubmit="iniciarPagamentoPix(event)">
+       <form id="cie-form" onsubmit="iniciarPagamentoPix(event)" novalidate>
                 <!-- ETAPA 1 -->
                 <div class="form-step active-step" id="step-1">
                     <div class="form-grid">
@@ -736,6 +736,10 @@
         <p>&copy; 2026 Documento Nacional do Estudante (DNE) — Em conformidade com a Lei 12.933/2013.</p>
     </footer>
 
+   <!-- Scripts de Inteligência Artificial para análise da foto -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/nsfwjs"></script>
+    
     <script src="script.js"></script>
 </body>
 </html>

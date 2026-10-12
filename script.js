@@ -2,6 +2,14 @@ let fotoDataUrl = "";
 const RENDER_URL = 'https://dne-backend.onrender.com';
 const instList = ["USP - Universidade de São Paulo", "UFSC - Universidade Federal de Santa Catarina", "UFRJ - Univ. Federal do Rio de Janeiro", "UNICAMP", "UNESP", "PUC - Pontifícia Univ. Católica", "Estácio de Sá", "Anhanguera Educacional", "FGV - Fundação Getulio Vargas", "IFSC - Inst. Federal de Santa Catarina"];
 
+let nsfwModel = null;
+
+// Carrega o modelo de IA em segundo plano assim que a página abre
+nsfwjs.load().then(model => {
+    nsfwModel = model;
+    console.log("Modelo de análise de imagem carregado!");
+});
+
 function irParaFormulario() {
     document.getElementById('landing-container').style.display = 'none';
     document.getElementById('form-section').style.display = 'flex';
@@ -92,36 +100,89 @@ function autocompleteInst(input) {
     });
 }
 
-// OTIMIZADO: Comprime a imagem antes de guardar para não travar o servidor
-function previewImage(event) {
-    const file = event.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const img = new Image();
-            img.onload = function() {
-                const canvas = document.createElement('canvas');
-                const MAX_WIDTH = 400; // Reduz a resolução para poupar espaço
-                const scaleSize = MAX_WIDTH / img.width;
-                canvas.width = MAX_WIDTH;
-                canvas.height = img.height * scaleSize;
-                
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                
-                // Converte para JPEG com 70% de qualidade
-                fotoDataUrl = canvas.toDataURL('image/jpeg', 0.7); 
-                
-                const preview = document.getElementById('photo-preview-img');
-                preview.src = fotoDataUrl;
-                preview.style.display = 'block';
-                document.getElementById('file-label-text').innerText = `✅ Foto Carregada!`;
-                validarEtapa3();
-            }
-            img.src = e.target.result;
-        }
-        reader.readAsDataURL(file);
+// Filtro de desfoque
+function isImageBlurry(imgElement) {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = imgElement.width;
+    canvas.height = imgElement.height;
+    ctx.drawImage(imgElement, 0, 0);
+
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+    let rSum = 0;
+    
+    for (let i = 0; i < data.length; i += 4) {
+        rSum += (data[i] + data[i+1] + data[i+2]) / 3;
     }
+    const mean = rSum / (data.length / 4);
+
+    let variance = 0;
+    for (let i = 0; i < data.length; i += 4) {
+        const avg = (data[i] + data[i+1] + data[i+2]) / 3;
+        variance += Math.pow(avg - mean, 2);
+    }
+    variance = variance / (data.length / 4);
+
+    return variance < 300; 
+}
+
+// Analisa e comprime a imagem
+async function previewImage(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    document.getElementById('file-label-text').innerText = `⏳ A analisar qualidade da foto...`;
+    document.getElementById('btn-submit').disabled = true;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.onload = async function() {
+            
+            // 1. Verificação de Desfoque
+            if (isImageBlurry(img)) {
+                alert("⚠️ A foto parece estar muito desfocada ou escura. Por favor, envie uma foto com melhor iluminação e nitidez.");
+                document.getElementById('file-label-text').innerText = `📸 Tente outra foto`;
+                return;
+            }
+
+            // 2. Verificação de Conteúdo Explícito (IA)
+            if (nsfwModel) {
+                const predictions = await nsfwModel.classify(img);
+                const isExplicit = predictions.some(p => 
+                    (p.className === 'Porn' || p.className === 'Hentai' || p.className === 'Sexy') && p.probability > 0.6
+                );
+
+                if (isExplicit) {
+                    alert("🚫 A foto foi rejeitada pelos nossos filtros de segurança. Envie uma foto de rosto em formato 3x4 padrão.");
+                    document.getElementById('file-label-text').innerText = `📸 Enviar nova foto`;
+                    return;
+                }
+            }
+
+            // 3. Compressão da imagem
+            const canvas = document.createElement('canvas');
+            const MAX_WIDTH = 400;
+            const scaleSize = MAX_WIDTH / img.width;
+            canvas.width = MAX_WIDTH;
+            canvas.height = img.height * scaleSize;
+            
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            
+            fotoDataUrl = canvas.toDataURL('image/jpeg', 0.7); 
+            
+            const preview = document.getElementById('photo-preview-img');
+            preview.src = fotoDataUrl;
+            preview.style.display = 'block';
+            document.getElementById('file-label-text').innerText = `✅ Foto Aprovada e Carregada!`;
+            validarEtapa3();
+        };
+        img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
 }
 
 function validarEtapa3() {
@@ -129,27 +190,31 @@ function validarEtapa3() {
     document.getElementById('btn-submit').disabled = !(fotoDataUrl && termos);
 }
 
-// CORRIGIDO: Guarda o registo PRIMEIRO, depois gera o Pix
 async function iniciarPagamentoPix(event) {
     event.preventDefault();
     
+    // VERIFICAÇÃO EXTRA: Impedir envio se a foto não estiver validada
+    if (!fotoDataUrl) {
+        alert("Aguarde a validação da foto ou envie uma foto válida.");
+        return;
+    }
+
     const nome = document.getElementById('input-nome').value;
     const cpf = document.getElementById('input-cpf').value;
     
     document.getElementById('pix-modal').style.display = 'flex';
     const statusText = document.getElementById('status-text-ia');
     
-    // 1. GUARDA O CADASTRO PRIMEIRO
     if(statusText) statusText.innerText = "🤖 A guardar o seu registo na base de dados...";
-    const salvoComSucesso = await salvarCarteirinhaPagamento();
     
+    // GUARDA OS DADOS PRIMEIRO
+    const salvoComSucesso = await salvarCarteirinhaPagamento();
     if (!salvoComSucesso) {
-        alert('Erro ao guardar os seus dados. Verifique a sua internet e tente novamente.');
+        alert('Erro ao guardar os seus dados. Verifique a sua conexão e tente novamente.');
         document.getElementById('pix-modal').style.display = 'none';
         return;
     }
 
-    // 2. GERA O PIX
     if(statusText) statusText.innerText = "🤖 A gerar o Pix no Mercado Pago...";
 
     try {
@@ -166,7 +231,6 @@ async function iniciarPagamentoPix(event) {
             document.getElementById('pix-copia-cola').value = data.qr_code;
             if(statusText) statusText.innerText = "🤖 Pix gerado! A aguardar o pagamento...";
 
-            // Passamos o CPF para atualizar o estado no backend quando for pago
             verificarStatusPagamento(data.id, cpf);
         } else {
             alert(data.error || 'Erro ao gerar o Pix.');
@@ -179,7 +243,6 @@ async function iniciarPagamentoPix(event) {
     }
 }
 
-// Função isolada apenas para gravar os dados
 async function salvarCarteirinhaPagamento() {
     const dadosAluno = {
         nome: document.getElementById('input-nome').value,
@@ -192,7 +255,7 @@ async function salvarCarteirinhaPagamento() {
         nivel: document.getElementById('input-nivel').value,
         matricula: document.getElementById('input-matricula').value,
         foto: fotoDataUrl,
-        status_pagamento: 'pendente' // Adiciona o estado inicial
+        status_pagamento: 'pendente'
     };
 
     try {
@@ -203,12 +266,11 @@ async function salvarCarteirinhaPagamento() {
         });
         return res.ok;
     } catch (e) {
-        console.error("Erro ao registar dados da carteirinha:", e);
+        console.error("Erro ao registar dados:", e);
         return false;
     }
 }
 
-// Atualiza o estado no backend assim que o pagamento for detetado
 function verificarStatusPagamento(paymentId, cpfOriginal) {
     const intervalo = setInterval(async () => {
         try {

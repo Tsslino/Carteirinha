@@ -44,7 +44,7 @@
                     <div class="step-indicator" id="ind-3">3</div>
                 </div>
 
-                <form id="cie-form" onsubmit="iniciarPagamentoPix(event)">
+               <form id="cie-form" onsubmit="iniciarPagamentoPix(event)" novalidate>
                     
                     <!-- ETAPA 1 -->
                     <div class="form-step active-step" id="step-1">
@@ -154,6 +154,10 @@
     <footer>
         <p>&copy; 2026 Documento Nacional do Estudante (DNE) — Em conformidade com a Lei 12.933/2013.</p>
     </footer>
+
+  <!-- Scripts de Inteligência Artificial para análise da foto -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/nsfwjs"></script>
 
     <script src="script.js"></script>
 </body>

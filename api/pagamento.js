@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import crypto from 'crypto';
 
-// Aumenta o limite de tamanho do corpo da requisição na Vercel (importante para imagens Base64)
+// Aumenta o limite de tamanho do corpo da requisição na Vercel
 export const config = {
     api: {
         bodyParser: {
@@ -34,7 +34,6 @@ export default async function handler(req, res) {
         return;
     }
 
-    // 1. ROTA DE LOGIN
     if (req.method === 'POST' && req.query.action === 'login') {
         if (!supabase) return res.status(500).json({ error: 'Configuração do Supabase ausente.' });
         
@@ -60,7 +59,6 @@ export default async function handler(req, res) {
         }
     }
 
-    // 2. ROTA SOLICITAR MAGIC LINK
     if (req.method === 'POST' && req.query.action === 'solicitar-magic-link') {
         if (!supabase) return res.status(500).json({ error: 'Configuração do Supabase indisponível.' });
         const { cpf } = req.body || {};
@@ -98,7 +96,6 @@ export default async function handler(req, res) {
         }
     }
 
-    // 3. ROTA REDEFINIR SENHA
     if (req.method === 'POST' && req.query.action === 'redefinir-senha') {
         const { token, novaSenha } = req.body || {};
         try {
@@ -114,7 +111,6 @@ export default async function handler(req, res) {
         }
     }
 
-    // 4. ROTA REGISTAR / SALVAR CARTEIRINHA (Agora chamado ANTES do pagamento)
     if (req.method === 'POST' && req.query.action === 'salvar') {
         if (!supabase) return res.status(500).json({ error: 'Chave do Supabase ausente.' });
 
@@ -128,7 +124,6 @@ export default async function handler(req, res) {
                 senhaHash = hashPassword(dados.senha);
             }
             
-            // Grava na base de dados
             const payload = { 
                 cpf: cpfLimpo, 
                 nome: dados.nome,
@@ -142,7 +137,6 @@ export default async function handler(req, res) {
                 status_pagamento: dados.status_pagamento || 'pendente'
             };
 
-            // Se for um novo registo ou alteração de senha, incluímos a senha
             if (senhaHash) {
                 payload.senha = senhaHash;
             }
@@ -160,7 +154,6 @@ export default async function handler(req, res) {
 
     const ACCESS_TOKEN = process.env.MP_ACCESS_TOKEN;
 
-    // 5. ROTA GERAR PIX
     if (req.method === 'POST') {
         if (!ACCESS_TOKEN) return res.status(500).json({ error: 'Token do Mercado Pago não configurado.' });
 
@@ -200,10 +193,9 @@ export default async function handler(req, res) {
         }
     }
 
-    // 6. ROTA VERIFICAR STATUS DO PAGAMENTO (Atualiza a BD se aprovado)
     if (req.method === 'GET' && req.query.action === 'verificar') {
         const paymentId = req.query.id;
-        const cpf = req.query.cpf; // Recebe o CPF enviado pelo script.js
+        const cpf = req.query.cpf; 
         if (!paymentId) return res.status(400).json({ error: 'ID do pagamento não fornecido.' });
 
         try {
@@ -215,7 +207,6 @@ export default async function handler(req, res) {
 
             if (!mpResponse.ok) return res.status(400).json({ error: 'Erro ao consultar o Mercado Pago.' });
 
-            // NOVO: Se estiver pago, atualiza diretamente o estado na base de dados
             if (paymentData.status === 'approved' && cpf && supabase) {
                 await supabase
                     .from('carteirinhas')
