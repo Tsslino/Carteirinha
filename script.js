@@ -92,17 +92,33 @@ function autocompleteInst(input) {
     });
 }
 
+// OTIMIZADO: Comprime a imagem antes de guardar para não travar o servidor
 function previewImage(event) {
     const file = event.target.files[0];
     if (file) {
         const reader = new FileReader();
         reader.onload = function(e) {
-            fotoDataUrl = e.target.result;
-            const preview = document.getElementById('photo-preview-img');
-            preview.src = fotoDataUrl;
-            preview.style.display = 'block';
-            document.getElementById('file-label-text').innerText = `✅ Foto Enquadrada! Clique para alterar`;
-            validarEtapa3();
+            const img = new Image();
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                const MAX_WIDTH = 400; // Reduz a resolução para poupar espaço
+                const scaleSize = MAX_WIDTH / img.width;
+                canvas.width = MAX_WIDTH;
+                canvas.height = img.height * scaleSize;
+                
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                
+                // Converte para JPEG com 70% de qualidade
+                fotoDataUrl = canvas.toDataURL('image/jpeg', 0.7); 
+                
+                const preview = document.getElementById('photo-preview-img');
+                preview.src = fotoDataUrl;
+                preview.style.display = 'block';
+                document.getElementById('file-label-text').innerText = `✅ Foto Carregada!`;
+                validarEtapa3();
+            }
+            img.src = e.target.result;
         }
         reader.readAsDataURL(file);
     }
@@ -113,7 +129,7 @@ function validarEtapa3() {
     document.getElementById('btn-submit').disabled = !(fotoDataUrl && termos);
 }
 
-// Rota de pagamento e PIX (Processado pelo Vercel via api/pagamento.js)
+// CORRIGIDO: Guarda o registo PRIMEIRO, depois gera o Pix
 async function iniciarPagamentoPix(event) {
     event.preventDefault();
     
@@ -122,7 +138,19 @@ async function iniciarPagamentoPix(event) {
     
     document.getElementById('pix-modal').style.display = 'flex';
     const statusText = document.getElementById('status-text-ia');
-    if(statusText) statusText.innerText = "🤖 Gerando Pix no Mercado Pago...";
+    
+    // 1. GUARDA O CADASTRO PRIMEIRO
+    if(statusText) statusText.innerText = "🤖 A guardar o seu registo na base de dados...";
+    const salvoComSucesso = await salvarCarteirinhaPagamento();
+    
+    if (!salvoComSucesso) {
+        alert('Erro ao guardar os seus dados. Verifique a sua internet e tente novamente.');
+        document.getElementById('pix-modal').style.display = 'none';
+        return;
+    }
+
+    // 2. GERA O PIX
+    if(statusText) statusText.innerText = "🤖 A gerar o Pix no Mercado Pago...";
 
     try {
         const response = await fetch('/api/pagamento', {
@@ -136,9 +164,10 @@ async function iniciarPagamentoPix(event) {
         if (data.qr_code) {
             document.getElementById('pix-qrcode-img').src = `data:image/jpeg;base64,${data.qr_code_base64}`;
             document.getElementById('pix-copia-cola').value = data.qr_code;
-            if(statusText) statusText.innerText = "🤖 Pix gerado! Aguardando pagamento...";
+            if(statusText) statusText.innerText = "🤖 Pix gerado! A aguardar o pagamento...";
 
-            verificarStatusPagamento(data.id);
+            // Passamos o CPF para atualizar o estado no backend quando for pago
+            verificarStatusPagamento(data.id, cpf);
         } else {
             alert(data.error || 'Erro ao gerar o Pix.');
             document.getElementById('pix-modal').style.display = 'none';
@@ -150,25 +179,7 @@ async function iniciarPagamentoPix(event) {
     }
 }
 
-function verificarStatusPagamento(paymentId) {
-    const intervalo = setInterval(async () => {
-        try {
-            const res = await fetch(`/api/pagamento?action=verificar&id=${paymentId}`);
-            const data = await res.json();
-
-            if (data.status === 'approved') {
-                clearInterval(intervalo);
-                document.getElementById('pix-modal').style.display = 'none';
-                
-                await salvarCarteirinhaPagamento();
-                gerarCarteirinhaFinal();
-            }
-        } catch (e) {
-            console.error("Erro ao verificar pagamento", e);
-        }
-    }, 4000);
-}
-
+// Função isolada apenas para gravar os dados
 async function salvarCarteirinhaPagamento() {
     const dadosAluno = {
         nome: document.getElementById('input-nome').value,
@@ -180,18 +191,40 @@ async function salvarCarteirinhaPagamento() {
         curso: document.getElementById('input-curso').value,
         nivel: document.getElementById('input-nivel').value,
         matricula: document.getElementById('input-matricula').value,
-        foto: fotoDataUrl
+        foto: fotoDataUrl,
+        status_pagamento: 'pendente' // Adiciona o estado inicial
     };
 
     try {
-        await fetch('/api/pagamento?action=salvar', {
+        const res = await fetch('/api/pagamento?action=salvar', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(dadosAluno)
         });
+        return res.ok;
     } catch (e) {
-        console.error("Erro ao registrar dados da carteirinha:", e);
+        console.error("Erro ao registar dados da carteirinha:", e);
+        return false;
     }
+}
+
+// Atualiza o estado no backend assim que o pagamento for detetado
+function verificarStatusPagamento(paymentId, cpfOriginal) {
+    const intervalo = setInterval(async () => {
+        try {
+            const cpfLimpo = cpfOriginal.replace(/\D/g, '');
+            const res = await fetch(`/api/pagamento?action=verificar&id=${paymentId}&cpf=${cpfLimpo}`);
+            const data = await res.json();
+
+            if (data.status === 'approved') {
+                clearInterval(intervalo);
+                document.getElementById('pix-modal').style.display = 'none';
+                gerarCarteirinhaFinal();
+            }
+        } catch (e) {
+            console.error("Erro ao verificar pagamento", e);
+        }
+    }, 4000);
 }
 
 function copiarPix() {
@@ -232,10 +265,9 @@ function gerarCarteirinhaFinal() {
     iniciarProtecaoAntiPrint();
 }
 
-// Redireciona diretamente para o Render usando o URL absoluto para o Google Pay / Wallet
 function salvarGoogleWallet() {
     const cpfTexto = document.getElementById('card-cpf').innerText;
-    const cpf = cpfTexto.replace(/\D/g, ''); // Remove pontos e traços
+    const cpf = cpfTexto.replace(/\D/g, ''); 
     if (!cpf) {
         alert('CPF não identificado.');
         return;
