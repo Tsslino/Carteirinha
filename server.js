@@ -37,7 +37,7 @@ app.get('/', (req, res) => {
 app.post('/api/pagamento', async (req, res) => {
     const { action } = req.query;
     
-    // 1. Rota de Login do Estudante
+    // 1. Rota de Login do Estudante (SÓ PERMITE SE O PAGAMENTO ESTIVER APROVADO)
     if (action === 'login') {
         const { cpf, senha } = req.body;
         const cpfLimpo = cpf ? cpf.replace(/\D/g, '') : '';
@@ -52,6 +52,11 @@ app.post('/api/pagamento', async (req, res) => {
                 return res.status(401).json({ error: 'CPF ou senha incorretos.' });
             }
 
+            // SEGURANÇA: Se o pagamento não foi aprovado, bloqueia o acesso ao login
+            if (estudante.status_pagamento !== 'approved') {
+                return res.status(403).json({ error: 'Pagamento pendente. A sua carteirinha só será liberada após a confirmação do Pix.' });
+            }
+
             return res.json({
                 encontrado: true,
                 ...estudante
@@ -62,17 +67,17 @@ app.post('/api/pagamento', async (req, res) => {
         }
     }
 
-    // 2. Rota de Salvamento e Captura de Carrinho Abandonado (Lead inicial)
+    // 2. Rota de Salvamento de Dados
     if (action === 'salvar' || req.body.cpf) {
         try {
             const dados = req.body;
             if (dados.cpf) {
-                dados.cpf = dados.cpf.replace(/\D/g, ''); // Limpa o CPF antes de guardar
+                dados.cpf = dados.cpf.replace(/\D/g, ''); 
             }
             
-            // Garante status pendente se não enviado
+            // Garante que se não vier status explícito, assume pendente
             if (!dados.status_pagamento) {
-                dados.status_pagamento = 'pendente_carrinho';
+                dados.status_pagamento = 'pendente';
             }
 
             const { error } = await supabase
@@ -83,10 +88,32 @@ app.post('/api/pagamento', async (req, res) => {
                 console.error('Erro ao salvar no Supabase:', error);
                 return res.status(400).json({ error: error.message });
             }
-            return res.json({ success: true, message: 'Lead capturado e salvo com sucesso!' });
+            return res.json({ success: true });
         } catch (err) {
             console.error('Erro interno ao salvar:', err);
             return res.status(500).json({ error: 'Erro interno ao salvar dados.' });
+        }
+    }
+
+    // 3. Verificação de status do pagamento
+    if (action === 'verificar') {
+        const { id, cpf } = req.query;
+        const cpfLimpo = cpf ? cpf.replace(/\D/g, '') : '';
+
+        try {
+            const { data: estudante } = await supabase
+                .from('carteirinhas')
+                .select('status_pagamento')
+                .eq('cpf', cpfLimpo)
+                .single();
+
+            if (estudante && estudante.status_pagamento === 'approved') {
+                return res.json({ status: 'approved' });
+            }
+
+            return res.json({ status: 'pending' });
+        } catch (e) {
+            return res.json({ status: 'pending' });
         }
     }
 
@@ -117,8 +144,8 @@ app.get('/api/carteira', async (req, res) => {
             .eq('cpf', cpfLimpo)
             .single();
 
-        if (error || !estudante) {
-            return res.status(404).json({ error: 'Carteirinha não encontrada para este CPF. Realize o cadastro primeiro.' });
+        if (error || !estudante || estudante.status_pagamento !== 'approved') {
+            return res.status(403).json({ error: 'Acesso negado. Carteirinha sem pagamento confirmado.' });
         }
 
         if (action === 'google') {
@@ -135,9 +162,6 @@ app.get('/api/carteira', async (req, res) => {
     }
 });
 
-// ==========================================
-// FUNÇÃO DE GERAÇÃO DO LINK DO GOOGLE WALLET
-// ==========================================
 function gerarLinkGoogleWallet(estudante) {
     const credentials = process.env.GOOGLE_CREDENTIALS_JSON 
         ? JSON.parse(process.env.GOOGLE_CREDENTIALS_JSON) 
@@ -151,56 +175,25 @@ function gerarLinkGoogleWallet(estudante) {
         id: objectId,
         classId: classId,
         state: 'ACTIVE',
-        cardTitle: {
-            defaultValue: {
-                language: 'pt-BR',
-                value: 'Carteira de Estudante'
-            }
-        },
-        header: {
-            defaultValue: {
-                language: 'pt-BR',
-                value: estudante.instituicao || 'Estudante'
-            }
-        },
-        subheader: {
-            defaultValue: {
-                language: 'pt-BR',
-                value: estudante.nome
-            }
-        },
+        cardTitle: { defaultValue: { language: 'pt-BR', value: 'Carteira de Estudante' } },
+        header: { defaultValue: { language: 'pt-BR', value: estudante.instituicao || 'Estudante' } },
+        subheader: { defaultValue: { language: 'pt-BR', value: estudante.nome } },
         textModulesData: [
-            {
-                header: 'CURSO',
-                body: estudante.curso || 'Não informado'
-            },
-            {
-                header: 'MATRÍCULA',
-                body: estudante.matricula || 'Não informada'
-            },
-            {
-                header: 'CPF',
-                body: estudante.cpf
-            }
+            { header: 'CURSO', body: estudante.curso || 'Não informado' },
+            { header: 'MATRÍCULA', body: estudante.matricula || 'Não informada' },
+            { header: 'CPF', body: estudante.cpf }
         ],
-        barcode: {
-            type: 'QR_CODE',
-            value: `DNE-${cpfLimpo}`,
-            alternateText: estudante.cpf
-        }
+        barcode: { type: 'QR_CODE', value: `DNE-${cpfLimpo}`, alternateText: estudante.cpf }
     };
 
     const claims = {
         iss: credentials.client_email,
         aud: 'google',
         typ: 'savetowallet',
-        payload: {
-            genericObjects: [genericObject]
-        }
+        payload: { genericObjects: [genericObject] }
     };
 
     const token = jwt.sign(claims, credentials.private_key, { algorithm: 'RS256' });
-
     return `https://pay.google.com/gp/v/save/${token}`;
 }
 

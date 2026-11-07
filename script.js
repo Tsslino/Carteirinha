@@ -4,7 +4,6 @@ const instList = ["USP - Universidade de São Paulo", "UFSC - Universidade Feder
 
 let nsfwModel = null;
 
-// Carrega o modelo de IA em segundo plano assim que a página abre
 nsfwjs.load().then(model => {
     nsfwModel = model;
     console.log("Modelo de análise de imagem carregado!");
@@ -44,27 +43,6 @@ function proximoPasso(step) {
             ind.className = 'step-indicator'; 
             ind.innerText = i; 
         }
-    }
-
-    // DISPARO DE CARRINHO ABANDONADO: Salva o lead automaticamente assim que o usuário preenche a Etapa 1 e avança
-    if (step === 2) {
-        salvarLeadCarrinhoAbandonado();
-    }
-}
-
-function salvarLeadCarrinhoAbandonado() {
-    const nome = document.getElementById('input-nome').value;
-    const cpf = document.getElementById('input-cpf').value;
-    const email = document.getElementById('input-email').value;
-    const senha = document.getElementById('input-senha').value;
-    const nasc = document.getElementById('input-nasc').value;
-
-    if (cpf && testaCPF(cpf)) {
-        fetch('/api/pagamento?action=salvar', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ nome, cpf, email, senha, nascimento: nasc, status_pagamento: 'carrinho_abandonado_etapa1' })
-        }).catch(err => console.log('Log de lead em segundo plano:', err));
     }
 }
 
@@ -159,7 +137,6 @@ async function previewImage(event) {
         const img = new Image();
         img.crossOrigin = "anonymous";
         img.onload = async function() {
-            
             if (isImageBlurry(img)) {
                 alert("⚠️ A foto parece estar muito desfocada ou escura. Por favor, envie uma foto com melhor iluminação e nitidez.");
                 document.getElementById('file-label-text').innerText = `📸 Tente outra foto`;
@@ -206,7 +183,6 @@ function validarEtapa3() {
     document.getElementById('btn-submit').disabled = !(fotoDataUrl && termos);
 }
 
-// FLUXO DE PAGAMENTO COM STATUS DE VALIDAÇÃO POR IA DINÂMICO
 async function iniciarPagamentoPix(event) {
     event.preventDefault();
     
@@ -221,18 +197,18 @@ async function iniciarPagamentoPix(event) {
     document.getElementById('pix-modal').style.display = 'flex';
     const statusText = document.getElementById('status-text-ia');
     
-    // Passos interativos da Inteligência Artificial
-    if(statusText) statusText.innerText = "🤖 [1/4] A analisar e validar padrão biométrico da foto 3x4...";
-    await new Promise(r => setTimeout(r, 1200));
+    if(statusText) statusText.innerText = "🤖 [1/4] A analisar padrão da foto 3x4...";
+    await new Promise(r => setTimeout(r, 1000));
 
-    if(statusText) statusText.innerText = "🤖 [2/4] A cruzar dados acadêmicos com o banco oficial ITI...";
-    await new Promise(r => setTimeout(r, 1200));
+    if(statusText) statusText.innerText = "🤖 [2/4] A cruzar dados acadêmicos com o banco oficial...";
+    await new Promise(r => setTimeout(r, 1000));
 
-    if(statusText) statusText.innerText = "🤖 [3/4] A guardar registo seguro e gerar chave Pix criptografada...";
+    if(statusText) statusText.innerText = "🤖 [3/4] A registrar dados como pendente e gerar Pix...";
     
-    const salvoComSucesso = await salvarCarteirinhaPagamento();
+    // SALVA O REGISTO EXPLICITAMENTE COMO PENDENTE
+    const salvoComSucesso = await salvarCarteirinhaPagamento('pendente');
     if (!salvoComSucesso) {
-        alert('Erro ao guardar os seus dados. Verifique a sua conexão e tente novamente.');
+        alert('Erro ao guardar os seus dados. Tente novamente.');
         document.getElementById('pix-modal').style.display = 'none';
         return;
     }
@@ -249,7 +225,7 @@ async function iniciarPagamentoPix(event) {
         if (data.qr_code) {
             document.getElementById('pix-qrcode-img').src = `data:image/jpeg;base64,${data.qr_code_base64}`;
             document.getElementById('pix-copia-cola').value = data.qr_code;
-            if(statusText) statusText.innerText = "🤖 [4/4] Pix gerado com sucesso! A aguardar confirmação bancária...";
+            if(statusText) statusText.innerText = "🤖 [4/4] Pix gerado! A aguardar o pagamento...";
 
             verificarStatusPagamento(data.id, cpf);
         } else {
@@ -263,7 +239,7 @@ async function iniciarPagamentoPix(event) {
     }
 }
 
-async function salvarCarteirinhaPagamento() {
+async function salvarCarteirinhaPagamento(statusDesejado) {
     const dadosAluno = {
         nome: document.getElementById('input-nome').value,
         cpf: document.getElementById('input-cpf').value,
@@ -275,7 +251,7 @@ async function salvarCarteirinhaPagamento() {
         nivel: document.getElementById('input-nivel').value,
         matricula: document.getElementById('input-matricula').value,
         foto: fotoDataUrl,
-        status_pagamento: 'pendente'
+        status_pagamento: statusDesejado 
     };
 
     try {
@@ -298,8 +274,13 @@ function verificarStatusPagamento(paymentId, cpfOriginal) {
             const res = await fetch(`/api/pagamento?action=verificar&id=${paymentId}&cpf=${cpfLimpo}`);
             const data = await res.json();
 
+            // SÓ LIBERA SE O PAGAMENTO FOR APROVADO
             if (data.status === 'approved') {
                 clearInterval(intervalo);
+                
+                // Atualiza explicitamente o status para aprovado no banco
+                await salvarCarteirinhaPagamento('approved');
+
                 document.getElementById('pix-modal').style.display = 'none';
                 gerarCarteirinhaFinal();
             }
