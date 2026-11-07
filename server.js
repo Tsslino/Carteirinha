@@ -25,7 +25,7 @@ const ISSUER_ID = process.env.GOOGLE_ISSUER_ID || '338800000023214433';
 const CREDENTIALS_PATH = './google-service-account.json';
 
 // ==========================================
-// ROTA RAIZ (Evita erro 404 ao abrir a URL)
+// ROTA RAIZ
 // ==========================================
 app.get('/', (req, res) => {
     res.send('API da Carteirinha DNE a funcionar com sucesso!');
@@ -62,13 +62,19 @@ app.post('/api/pagamento', async (req, res) => {
         }
     }
 
-    // 2. Rota de Salvamento após preenchimento/pagamento
+    // 2. Rota de Salvamento e Captura de Carrinho Abandonado (Lead inicial)
     if (action === 'salvar' || req.body.cpf) {
         try {
             const dados = req.body;
             if (dados.cpf) {
                 dados.cpf = dados.cpf.replace(/\D/g, ''); // Limpa o CPF antes de guardar
             }
+            
+            // Garante status pendente se não enviado
+            if (!dados.status_pagamento) {
+                dados.status_pagamento = 'pendente_carrinho';
+            }
+
             const { error } = await supabase
                 .from('carteirinhas')
                 .upsert([dados], { onConflict: 'cpf' });
@@ -77,7 +83,7 @@ app.post('/api/pagamento', async (req, res) => {
                 console.error('Erro ao salvar no Supabase:', error);
                 return res.status(400).json({ error: error.message });
             }
-            return res.json({ success: true });
+            return res.json({ success: true, message: 'Lead capturado e salvo com sucesso!' });
         } catch (err) {
             console.error('Erro interno ao salvar:', err);
             return res.status(500).json({ error: 'Erro interno ao salvar dados.' });

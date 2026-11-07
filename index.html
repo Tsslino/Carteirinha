@@ -200,6 +200,50 @@
         .faq-box h4 { font-size: 15px; font-weight: 700; color: #0f172a; display: flex; justify-content: space-between; align-items: center; }
         .faq-box p { font-size: 13px; color: #64748b; margin-top: 10px; line-height: 1.6; }
 
+        /* SELOS DE SEGURANÇA E CONFIANÇA */
+        .security-badges-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 40px;
+        }
+        @media(max-width: 768px) { .security-badges-container { grid-template-columns: 1fr; } }
+        .security-badge-item {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            padding: 16px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+        }
+        .security-badge-item i { font-size: 22px; color: #16a34a; }
+        .security-badge-item h5 { font-size: 13px; font-weight: 800; color: #0f172a; }
+        .security-badge-item p { font-size: 11px; color: #64748b; margin-top: 2px; }
+
+        /* BOTÃO FLUTUANTE WHATSAPP */
+        .whatsapp-float-btn {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            background-color: #25D366;
+            color: white;
+            padding: 14px 22px;
+            border-radius: 50px;
+            font-weight: 800;
+            font-size: 14px;
+            text-decoration: none;
+            box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: transform 0.2s;
+        }
+        .whatsapp-float-btn:hover { transform: scale(1.05); }
+        .whatsapp-float-btn i { font-size: 20px; }
+
         /* ÁREA DE FORMULÁRIO DEDICADO */
         #form-section {
             display: none; padding: 60px 5%; background: #f8fafc; min-height: 85vh;
@@ -334,6 +378,13 @@
     </style>
 </head>
 <body oncontextmenu="return false;">
+
+    <!-- BOTÃO FLUTUANTE DE SUPORTE RÁPIDO VIA WHATSAPP -->
+    <a href="https://wa.me/5548988140772?text=Oi%20preciso%20de%20ajuda%20com%20a%20carteirinha%20estudantil" 
+       target="_blank" 
+       class="whatsapp-float-btn">
+       <i class="fa-brands fa-whatsapp"></i> Suporte Rápido
+    </a>
 
     <!-- CABEÇALHO -->
     <header>
@@ -487,7 +538,7 @@
             </div>
         </section>
 
-        <!-- PERGUNTAS FREQUENTES -->
+        <!-- PERGUNTAS FREQUENTES & SEGURANÇA -->
         <section class="section-padding">
             <div class="content-limit">
                 <div class="sub-orange">DÚVIDAS FREQUENTES</div>
@@ -495,8 +546,20 @@
 
                 <div class="faq-accordion">
                     <div class="faq-box">
-                        <h4><i class="fa-solid fa-circle-question" style="color:#2563eb;"></i> Em quanto tempo a carteirinha fica pronta?</h4>
-                        <p>Com a validação automática via Inteligência Artificial, sua carteirinha digital é disponibilizada <strong>instantaneamente</strong> após a confirmação do Pix.</p>
+                        <h4><i class="fa-solid fa-circle-question" style="color:#2563eb;"></i> A carteirinha digital tem validade legal em todo o Brasil?</h4>
+                        <p>Sim! Em total conformidade com a Lei Federal nº 12.933/2013. É aceita em cinemas, shows, teatros, jogos de futebol e eventos culturais em todo o território nacional.</p>
+                    </div>
+                    <div class="faq-box">
+                        <h4><i class="fa-solid fa-circle-question" style="color:#2563eb;"></i> Em quanto tempo recebo o meu documento após o pagamento?</h4>
+                        <p>É instantâneo. Assim que o pagamento via Pix é confirmado pelo nosso sistema automatizado, sua carteirinha é gerada na hora e fica disponível para acesso no celular e download em PDF/Google Wallet.</p>
+                    </div>
+                    <div class="faq-box">
+                        <h4><i class="fa-solid fa-circle-question" style="color:#2563eb;"></i> Quais documentos preciso para solicitar?</h4>
+                        <p>Apenas seus dados básicos (Nome, CPF, Data de Nascimento), dados da sua instituição de ensino (Nome da escola/faculdade, curso e número de matrícula) e uma foto 3x4 recente.</p>
+                    </div>
+                    <div class="faq-box">
+                        <h4><i class="fa-solid fa-circle-question" style="color:#2563eb;"></i> Posso usar a carteirinha direto no celular?</h4>
+                        <p>Sim! A versão digital oficial foi feita justamente para isso. Você pode salvá-la no seu celular, adicionar ao Google Wallet ou baixar em PDF para apresentar na entrada dos eventos junto com um documento com foto.</p>
                     </div>
                     <div class="faq-box">
                         <h4><i class="fa-solid fa-circle-question" style="color:#2563eb;"></i> Como faço para ver minha carteirinha depois de ter pago?</h4>
@@ -507,6 +570,32 @@
                         <p>Até 31 de março do ano seguinte ao da solicitação (Lei 12.933/2013).</p>
                     </div>
                 </div>
+
+                <!-- SELOS DE SEGURANÇA E SSL -->
+                <div class="security-badges-container">
+                    <div class="security-badge-item">
+                        <i class="fa-solid fa-lock"></i>
+                        <div>
+                            <h5>Ambiente 100% Seguro</h5>
+                            <p>Dados protegidos com criptografia SSL de ponta a ponta.</p>
+                        </div>
+                    </div>
+                    <div class="security-badge-item">
+                        <i class="fa-solid fa-bolt"></i>
+                        <div>
+                            <h5>Pix Instantâneo</h5>
+                            <p>Transação processada diretamente em ambiente bancário oficial.</p>
+                        </div>
+                    </div>
+                    <div class="security-badge-item">
+                        <i class="fa-solid fa-shield-halved"></i>
+                        <div>
+                            <h5>Garantia de Emissão</h5>
+                            <p>Documento oficial emitido conforme regulamentação da lei.</p>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </section>
 

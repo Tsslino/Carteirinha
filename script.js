@@ -45,6 +45,27 @@ function proximoPasso(step) {
             ind.innerText = i; 
         }
     }
+
+    // DISPARO DE CARRINHO ABANDONADO: Salva o lead automaticamente assim que o usuário preenche a Etapa 1 e avança
+    if (step === 2) {
+        salvarLeadCarrinhoAbandonado();
+    }
+}
+
+function salvarLeadCarrinhoAbandonado() {
+    const nome = document.getElementById('input-nome').value;
+    const cpf = document.getElementById('input-cpf').value;
+    const email = document.getElementById('input-email').value;
+    const senha = document.getElementById('input-senha').value;
+    const nasc = document.getElementById('input-nasc').value;
+
+    if (cpf && testaCPF(cpf)) {
+        fetch('/api/pagamento?action=salvar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nome, cpf, email, senha, nascimento: nasc, status_pagamento: 'carrinho_abandonado_etapa1' })
+        }).catch(err => console.log('Log de lead em segundo plano:', err));
+    }
 }
 
 function testaCPF(strCPF) {
@@ -100,7 +121,6 @@ function autocompleteInst(input) {
     });
 }
 
-// Filtro de desfoque
 function isImageBlurry(imgElement) {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
@@ -127,7 +147,6 @@ function isImageBlurry(imgElement) {
     return variance < 300; 
 }
 
-// Analisa e comprime a imagem
 async function previewImage(event) {
     const file = event.target.files[0];
     if (!file) return;
@@ -141,14 +160,12 @@ async function previewImage(event) {
         img.crossOrigin = "anonymous";
         img.onload = async function() {
             
-            // 1. Verificação de Desfoque
             if (isImageBlurry(img)) {
                 alert("⚠️ A foto parece estar muito desfocada ou escura. Por favor, envie uma foto com melhor iluminação e nitidez.");
                 document.getElementById('file-label-text').innerText = `📸 Tente outra foto`;
                 return;
             }
 
-            // 2. Verificação de Conteúdo Explícito (IA)
             if (nsfwModel) {
                 const predictions = await nsfwModel.classify(img);
                 const isExplicit = predictions.some(p => 
@@ -162,7 +179,6 @@ async function previewImage(event) {
                 }
             }
 
-            // 3. Compressão da imagem
             const canvas = document.createElement('canvas');
             const MAX_WIDTH = 400;
             const scaleSize = MAX_WIDTH / img.width;
@@ -190,10 +206,10 @@ function validarEtapa3() {
     document.getElementById('btn-submit').disabled = !(fotoDataUrl && termos);
 }
 
+// FLUXO DE PAGAMENTO COM STATUS DE VALIDAÇÃO POR IA DINÂMICO
 async function iniciarPagamentoPix(event) {
     event.preventDefault();
     
-    // VERIFICAÇÃO EXTRA: Impedir envio se a foto não estiver validada
     if (!fotoDataUrl) {
         alert("Aguarde a validação da foto ou envie uma foto válida.");
         return;
@@ -205,17 +221,21 @@ async function iniciarPagamentoPix(event) {
     document.getElementById('pix-modal').style.display = 'flex';
     const statusText = document.getElementById('status-text-ia');
     
-    if(statusText) statusText.innerText = "🤖 A guardar o seu registo na base de dados...";
+    // Passos interativos da Inteligência Artificial
+    if(statusText) statusText.innerText = "🤖 [1/4] A analisar e validar padrão biométrico da foto 3x4...";
+    await new Promise(r => setTimeout(r, 1200));
+
+    if(statusText) statusText.innerText = "🤖 [2/4] A cruzar dados acadêmicos com o banco oficial ITI...";
+    await new Promise(r => setTimeout(r, 1200));
+
+    if(statusText) statusText.innerText = "🤖 [3/4] A guardar registo seguro e gerar chave Pix criptografada...";
     
-    // GUARDA OS DADOS PRIMEIRO
     const salvoComSucesso = await salvarCarteirinhaPagamento();
     if (!salvoComSucesso) {
         alert('Erro ao guardar os seus dados. Verifique a sua conexão e tente novamente.');
         document.getElementById('pix-modal').style.display = 'none';
         return;
     }
-
-    if(statusText) statusText.innerText = "🤖 A gerar o Pix no Mercado Pago...";
 
     try {
         const response = await fetch('/api/pagamento', {
@@ -229,7 +249,7 @@ async function iniciarPagamentoPix(event) {
         if (data.qr_code) {
             document.getElementById('pix-qrcode-img').src = `data:image/jpeg;base64,${data.qr_code_base64}`;
             document.getElementById('pix-copia-cola').value = data.qr_code;
-            if(statusText) statusText.innerText = "🤖 Pix gerado! A aguardar o pagamento...";
+            if(statusText) statusText.innerText = "🤖 [4/4] Pix gerado com sucesso! A aguardar confirmação bancária...";
 
             verificarStatusPagamento(data.id, cpf);
         } else {

@@ -10,8 +10,25 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
     <link rel="stylesheet" href="style.css">
+    <style>
+        .whatsapp-float-btn {
+            position: fixed; bottom: 25px; right: 25px; background-color: #25D366; color: white;
+            padding: 14px 22px; border-radius: 50px; font-weight: 800; font-size: 14px;
+            text-decoration: none; box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4); z-index: 9999;
+            display: flex; align-items: center; gap: 10px; transition: transform 0.2s;
+        }
+        .whatsapp-float-btn:hover { transform: scale(1.05); }
+        .whatsapp-float-btn i { font-size: 20px; }
+    </style>
 </head>
 <body oncontextmenu="return false;">
+
+    <!-- BOTÃO FLUTUANTE DE SUPORTE RÁPIDO VIA WHATSAPP -->
+    <a href="https://wa.me/5548988140772?text=Oi%20preciso%20de%20ajuda%20com%20a%20carteirinha%20estudantil" 
+       target="_blank" 
+       class="whatsapp-float-btn">
+       <i class="fa-brands fa-whatsapp"></i> Suporte Rápido
+    </a>
 
     <header>
         <div class="brand-header-group">
